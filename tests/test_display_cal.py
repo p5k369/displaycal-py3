@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import os
 from pathlib import Path
 from typing import Tuple
 
@@ -50,5 +51,7 @@ def test_colorimeter_correction_check_overwrite(
     path = data_files["0_16.ti3"].absolute()
     with open(path, "rb") as cgatsfile:
         cgats = universal_newlines(cgatsfile.read())
+    print(get_cgats_path(cgats))
+    print(os.path.isfile(path))
     with check_call(BaseInteractiveDialog, "ShowWindowModalBlocking", wx.ID_OK):
         assert colorimeter_correction_check_overwrite(mainframe, cgats, True) == True
