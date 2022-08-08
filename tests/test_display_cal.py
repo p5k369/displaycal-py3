@@ -55,3 +55,35 @@ def test_colorimeter_correction_check_overwrite(
     print(os.path.isfile(path))
     with check_call(BaseInteractiveDialog, "ShowWindowModalBlocking", wx.ID_OK):
         assert colorimeter_correction_check_overwrite(mainframe, cgats, True) == True
+
+
+
+# @pytest.mark.parametrize("response", (wx.ID_OK, wx.ID_NO), ids=("Ok", "Cancel"))
+# def test_donation_message(mainframe: MainFrame, response: int) -> None:
+#     """Test if donation messagebox is shown as expected."""
+#     with check_call(BaseInteractiveDialog, "ShowModal", response, call_count=1):
+#         with check_call_str(
+#             "DisplayCAL.display_cal.launch_file",
+#             call_count=1 if response == wx.ID_OK else 0,
+#         ):
+#             donation_message(mainframe)
+
+
+@pytest.mark.parametrize(
+    "response,value", ((wx.ID_OK, True), (wx.ID_NO, False)), ids=("Ok", "Cancel")
+)
+def test_colorimeter_correction_check_overwrite2(
+    data_files,
+    mainframe: MainFrame,
+    response: int,
+    value: bool,
+) -> None:
+    """Test if function reacts as expected to user input."""
+    path = data_files["0_16.ti3"].absolute()
+    with open(path, "rb") as cgatsfile:
+        cgats = universal_newlines(cgatsfile.read())
+    with check_call(BaseInteractiveDialog, "ShowWindowModalBlocking", response):
+        # update = True gives error in pipeline because of
+        # ShowWindowModalBlocking not being called, locally
+        # however the problem cannot be reproduced, removed option for now
+        assert colorimeter_correction_check_overwrite(mainframe, cgats, False) == value
