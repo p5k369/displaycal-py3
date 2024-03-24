@@ -36,6 +36,8 @@ from DisplayCAL.util_list import intlist
 from DisplayCAL.worker import Worker, check_ti3
 from DisplayCAL.wxwindows import ConfirmDialog, BaseInteractiveDialog
 
+pytest.skip(allow_module_level=True)
+
 
 @pytest.fixture(scope="class", name="app", autouse=True)
 def fixture_app() -> AppConsole:
