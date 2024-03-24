@@ -1,9 +1,9 @@
 name: Tests
 on:
-  pull_request:
-    types: [opened, synchronize, reopened, ready_for_review, unlabeled]
-    branches:
-      - develop
+  push
+  #  types: [opened, synchronize, reopened, ready_for_review, unlabeled]
+  #  branches:
+  #    - develop
 
 jobs:
   build:
@@ -28,11 +28,11 @@ jobs:
           - python-version: "3.11"
             wx-version: "4.1.1"
           - python-version: "3.12"
-            wx-version: "4.1.1"
+            wx-version: "4.1.1" "4.2.0"
 
     steps:
 
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: Set Environment Variables
       run: |
@@ -45,12 +45,9 @@ jobs:
           echo "add_dir_str=cpython-310" >> $GITHUB_ENV
         elif [ "${{ matrix.python-version }}" == "3.11" ]; then
           echo "add_dir_str=cpython-311" >> $GITHUB_ENV
+        elif [ "${{ matrix.python-version }}" == "3.12" ]; then
+          echo "add_dir_str=cpython-312" >> $GITHUB_ENV
         fi
-
-    - name: Setup timezone
-      uses: zcong1993/setup-timezone@master
-      with:
-        timezone: UTC
 
     - name: Setup xvfb
       run: |
@@ -69,7 +66,7 @@ jobs:
         sudo /usr/bin/Xvfb $DISPLAY -screen 0 1280x1024x24 &
 
     - name: Setup Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: ${{ matrix.python-version }}
 
