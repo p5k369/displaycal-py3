@@ -97,7 +97,6 @@ def test_worker_instrument_supports_css_1():
     assert result == expected_result
 
 
-@pytest.mark.skip(reason="Test segfaults with python 3.12 - further investigation required.")
 def test_generate_b2a_from_inverse_table(data_files, argyll):
     """Test Worker.generate_B2A_from_inverse_table() method"""
     worker = Worker()

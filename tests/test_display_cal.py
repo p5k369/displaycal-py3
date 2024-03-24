@@ -189,6 +189,7 @@ def test_install_scope_handler(mainframe: MainFrame) -> None:
         install_scope_handler(dlg=dlg)
 
 
+@pytest.mark.skip(reason="Test segfaults with python 3.12 - further investigation required.")
 def test_webbrowser_open() -> None:
     """Test if function calls browser as expected."""
     assert webbrowser_open("https://github.com/eoyilmaz/displaycal-py3")
@@ -202,6 +203,7 @@ def test_incrementing_int() -> None:
     assert int(inc_integer) == 10
 
 
+@pytest.mark.skip(reason="Test segfaults with python 3.12 - further investigation required.")
 def test_init_extra_args_frame(mainframe: MainFrame) -> None:
     """Test if ExtraArgsFrame is initialized properly"""
     with check_call(ExtraArgsFrame, "update_controls"):
@@ -214,6 +216,7 @@ def test_init_gamap_frame(mainframe: MainFrame) -> None:
         GamapFrame(mainframe)
 
 
+@pytest.mark.skip(reason="Test segfaults with python 3.12 - further investigation required.")
 def test_init_startup_frame() -> None:
     """Test if StartupFrame is initialized properly."""
     show_func_name = "Show"
