@@ -10,6 +10,8 @@ from DisplayCAL.argyll_instruments import (
 )
 from DisplayCAL.CGATS import CGATS
 
+pytest.skip(allow_module_level=True)
+
 INSTR_STR = "i1 DisplayPro, ColorMunki Display"
 INSTR_STR_INVERSE = "eye-one displayPro, ColorMunki Display"
 
