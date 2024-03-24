@@ -28,7 +28,9 @@ jobs:
           - python-version: "3.11"
             wx-version: "4.1.1"
           - python-version: "3.12"
-            wx-version: "4.1.1", "4.2.0"
+            wx-version:
+            - "4.1.1"
+            - "4.2.0"
 
     steps:
 
