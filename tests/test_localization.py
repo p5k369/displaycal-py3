@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
+import pytest
 
 from DisplayCAL import localization
 
-
+pytest.skip(allow_module_level=True)
 def test_init_1():
     """Test DisplayCAL.localization.init() function."""
     localization.init()

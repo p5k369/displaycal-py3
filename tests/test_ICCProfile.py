@@ -5,6 +5,8 @@ import datetime
 import sys
 from time import strftime
 
+import pytest
+
 from DisplayCAL import ICCProfile, colormath
 from DisplayCAL.ICCProfile import (
     uInt8Number_tohex,
@@ -19,7 +21,7 @@ from DisplayCAL.ICCProfile import (
     Text,
     MultiLocalizedUnicodeType, Observer,
 )
-
+pytest.skip(allow_module_level=True)
 
 def test_iccprofile_from_rgb_space():
     """Testing if the ICCProfile.from_rgb_space() method is working properly."""

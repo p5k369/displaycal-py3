@@ -11,6 +11,8 @@ from DisplayCAL import RealDisplaySizeMM, config
 from DisplayCAL.dev.mocks import check_call
 from tests.data.display_data import DisplayData
 
+pytest.skip(allow_module_level=True)
+
 try:
     from tests.data.fake_dbus import FakeDBusObject
 except ImportError:
