@@ -25,11 +25,10 @@ jobs:
           - "4.1.1"
           - "4.2.1"
         exclude:
-          - python-version: "3.11"
+          - python-version:
+            - "3.11"
+            - "3.12"
             wx-version: "4.1.1"
-          - python-version: "3.12"
-            wx-version:
-            - "4.1.1"
 
     steps:
 
