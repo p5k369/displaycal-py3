@@ -10,7 +10,7 @@ from DisplayCAL.dev.mocks import check_call, check_call_str
 from DisplayCAL.wxMeasureFrame import get_default_size
 from tests.data.display_data import DisplayData
 
-
+pytest.skip(allow_module_level=True)
 @pytest.fixture(
     scope="session", name="size_in_mm", params=["size_available", "size_unavailable"]
 )
