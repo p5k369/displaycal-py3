@@ -25,7 +25,7 @@ Here is a screenshots showing the tool working with Python 3.10:
 
 ![image](https://user-images.githubusercontent.com/1786804/169152229-e06ff549-55fe-4149-8742-405446e6b01f.png)
 
-Currently, DisplayCAL is working with Python 3.8, 3.9, 3.10 and 3.11 and wxPython 4.1.1 to 4.2.1.
+Currently, DisplayCAL is working with Python 3.8 to 3.11 and wxPython 4.1.1 to 4.2.1.
 
 Here is a list of things that is working:
 
@@ -66,6 +66,7 @@ Prerequisites:
 * gtk-3
 * libXxf86vm
 * pkg-config
+* python3-devel
 
 Please install these from your package manager. 
 
@@ -77,8 +78,10 @@ brew install glib gtk+3 python@3.10
 apt-get install build-essential dbus libglib2.0-dev pkg-config libgtk-3-dev libxxf86vm-dev
 
 # Fedora core installs
-dnf install gcc glibc-devel dbus pkgconf gtk3-devel libXxf86vm-devel
+dnf install gcc glibc-devel dbus pkgconf gtk3-devel libXxf86vm-devel python3-devel
 ```
+
+Note, if your system's default python is outside the supported range you will need to install a supported version and its related devel package. 
 
 Then pull the source:
 
@@ -100,6 +103,17 @@ Then you can build and install DisplayCAL using:
 make build
 make install
 ```
+The build step assumes your system has a python3 binary available that is within the correct range. If your system python3 is not supported and you installed a new one, you can try passing it to the build command.
+eg
+
+```shell
+$ python3 --version
+# Python 3.12.2
+make build # this will fail
+$ python3.11 --version
+# Python 3.11.8
+make SYSTEM_PYTHON=python3.11 build # should work
+```
 
 If this errors out for you, you can follow the [Manual Setup](https://github.com/eoyilmaz/displaycal-py3#manually-setup)
 section below.
@@ -114,10 +128,10 @@ Manually Setup
 --------------
 
 If the `makefile` workflow doesn't work for you, you can setup the virtual environment
-manually:
+manually. Ensure the python binary you're using is supported:
 
 ```shell
-python -m venv .venv
+python -m venv .venv # python3.11 -m venv .venv if system python is not a supported version
 source .venv/bin/activate  # Windows: .venv\Scripts\activate.bat
 pip install -r requirements.txt
 python -m build
