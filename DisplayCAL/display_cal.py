@@ -6840,7 +6840,7 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
                 show_result_dialog(
                     Error(lang.getstr("ambient.measure.light_level.missing")), self
                 )
-            if not set_whitepoint and 4000 <= K <= 25000:
+            if not set_whitepoint and K is not None and 4000 <= K <= 25000:
                 dlg = ConfirmDialog(
                     self,
                     msg=lang.getstr("whitepoint.set"),
