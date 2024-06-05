@@ -535,7 +535,7 @@ class CGATS(dict):
                                 else display
                             )
                     if display:
-                        tech += f" (display)"
+                        tech += f" ({display})"
                 if isinstance(tech, str):
                     desc = tech.encode("utf-8")
         if not desc and self.filename:
