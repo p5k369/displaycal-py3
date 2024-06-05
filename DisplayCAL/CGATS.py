@@ -535,8 +535,9 @@ class CGATS(dict):
                                 else display
                             )
                     if display:
-                        tech += " (%s)" % display
-                desc = tech.encode("utf-8")  # TODO: This could be problematic
+                        tech += f" (display)"
+                if isinstance(tech, str):
+                    desc = tech.encode("utf-8")
         if not desc and self.filename:
             # With Python 3.6+ the encoding is always "utf-8" independent of the OS.
             desc = bytes(
