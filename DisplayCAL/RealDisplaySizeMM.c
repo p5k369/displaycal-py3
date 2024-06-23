@@ -848,7 +848,7 @@ disppath **get_displays() {
                         Atom edid_atom, ret_type;
                         int ret_format;
                         long ret_len = 0;
-                        unsigned long *ret_togo;
+                        unsigned long ret_togo;
                         unsigned char *atomv = NULL;
                         int ii;
                         char *keys[] = {        /* Possible keys that may be used */
