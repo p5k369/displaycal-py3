@@ -26,7 +26,6 @@ if sys.platform == "win32":
     import ctypes
     import math
     import re
-    import struct
     import subprocess as sp
     import traceback
     import warnings
@@ -2466,9 +2465,9 @@ class ProfileLoader(object):
             try:
                 display = winreg.QueryValueEx(subkey, "SetId")[0]
                 value_name = "Timestamp"
-                timestamp = struct.unpack(
-                    "<Q", winreg.QueryValueEx(subkey, "Timestamp")[0].rjust(8, "0")
-                )
+                # winreg.QueryValuesEx will directly return the int value,
+                # so no need to convert the binary data as in Python2
+                timestamp = winreg.QueryValueEx(subkey, "Timestamp")[0]
             except WindowsError as exception:
                 warnings.warn(
                     r"Registry access failed: %s: %s (HKLM\%s\%s)"
