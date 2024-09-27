@@ -271,7 +271,6 @@ def get_scripts(excludes=None):
             f"{script}.desktop"
         )
         if os.path.isfile(desktopfile):
-            print(f"desktopfile: {desktopfile}")
             cfg = ConfigParser()
             cfg.read(desktopfile)
             script = cfg.get("Desktop Entry", "Exec").split()[0]
@@ -831,7 +830,6 @@ def build_py2exe():
         "data_files": attrs["data_files"],
         "zipfile": attrs["zipfile"],
         "options": attrs["options"],
-        # "version_info": attrs["version_info"]
     }
 
     print("Running py2exe.freeze!")
