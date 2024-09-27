@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-
+"""This script is used by the py2exe to freeze the library into executables.
+"""
 import sys
 import functools
 import shutil
@@ -175,7 +176,7 @@ config = {
             "xrc/*.xrc",
         ]
     },
-    "xtra_package_data": {name: {"win32": ["theme/icons/%s-uninstall.ico" % name]}},
+    "xtra_package_data": {name: {"win32": [f"theme/icons/{name}-uninstall.ico"]}},
 }
 
 
@@ -724,7 +725,7 @@ def build_py2exe():
                 "mfc90.dll",
             ],
             "excludes": config["excludes"]["all"] + config["excludes"]["win32"],
-            "bundle_files": 3 if wx.VERSION >= (2, 8, 10, 1) else 1,
+            "bundle_files": 3,  # if wx.VERSION >= (2, 8, 10, 1) else 1,
             "compressed": 1,
             "optimize": 0,  # 0 = don’t optimize (generate .pyc)
             # 1 = normal optimization (like python -O)
