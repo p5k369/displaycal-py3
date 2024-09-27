@@ -29,3 +29,4 @@ __pycache__/
 /DisplayCAL/lib64/RealDisplaySizeMM.cpython-311-darwin.so
 /DisplayCAL/lib64/RealDisplaySizeMM.cpython-312-darwin.so
 cacert.pem
+*.code-workspace
