@@ -75,7 +75,6 @@ from DisplayCAL import defaultpaths
 from DisplayCAL import imfile
 from DisplayCAL import localization as lang
 from DisplayCAL import wexpect
-# import wexpect
 from DisplayCAL.argyll_cgats import (
     add_dispcal_options_to_cal,
     add_options_to_ti3,
@@ -1700,7 +1699,6 @@ def set_argyll_bin(parent=None, silent=False, callafter=None, callafter_args=())
 
 
 class EvalFalse(object):
-
     """Evaluate to False in boolean comparisons"""
 
     def __init__(self, wrapped_object):
@@ -1863,7 +1861,9 @@ class Producer(object):
         except Exception as exception:
             if debug:
                 messages = traceback.format_exception(exception)
-                print("[D] Worker raised an unhandled exception: \n" + "\n".join(messages))
+                print(
+                    "[D] Worker raised an unhandled exception: \n" + "\n".join(messages)
+                )
             raise
         if not self.continue_next and self.worker._progress_wnd:
             if hasattr(
@@ -5497,12 +5497,9 @@ END_DATA
                         if argyll_version_string != self.argyll_version_string:
                             self.set_argyll_version_from_string(argyll_version_string)
                         print(f"ArgyllCMS {self.argyll_version_string}")
-                        defaults[
-                            "copyright"
-                        ] = "No copyright. Created with %s %s and Argyll CMS %s" % (
-                            appname,
-                            version,
-                            argyll_version_string,
+                        defaults["copyright"] = (
+                            f"No copyright. Created with {appname} {version} and "
+                            f"Argyll CMS {argyll_version_string}"
                         )
 
                         if self.argyll_version > [1, 0, 4]:
@@ -5955,7 +5952,10 @@ END_DATA
         # If dry_run is explicitly set to False, ignore dry_run config value
         dry_run = dry_run is not False and (dry_run or getcfg("dry_run"))
         if not capture_output:
-            capture_output = not sys.stdout or not hasattr(sys.stdout, "isatty") or not sys.stdout.isatty()
+            capture_output = False
+            if sys.stdout and hasattr(sys.stdout, "isatty") and not sys.stdout.isatty():
+                capture_output = True
+
         self.clear_cmd_output()
         if None in [cmd, args]:
             if verbose >= 1 and not silent:
@@ -6610,7 +6610,7 @@ BEGIN_DATA
                     if os.path.exists(path):
                         pythonpath[i] = win32api.GetShortPathName(path)
                 # Write out .wait.py file
-                scriptfilename =  f"{waitfilename}.py"
+                scriptfilename = f"{waitfilename}.py"
                 with open(scriptfilename, "w", encoding="utf-8") as scriptfile:
                     scriptfile.write(pythonscript)
                 scriptfilename = win32api.GetShortPathName(scriptfilename)
@@ -6633,7 +6633,7 @@ BEGIN_DATA
                 with open(waitfilename, "w") as waitfile:
                     waitfile.write(f"#!/usr/bin/env python3\n{pythonscript}")
                 os.chmod(waitfilename, 0o755)
-                args[index] += '%s ./%s' % (
+                args[index] += "%s ./%s" % (
                     strtr(safe_str(python), {'"': r"\"", "$": r"\$"}),
                     os.path.basename(waitfilename),
                 )
@@ -6977,7 +6977,9 @@ BEGIN_DATA
                     stderr = tempfile.SpooledTemporaryFile()
                 if capture_output:
                     stdout = tempfile.SpooledTemporaryFile()
-                elif sys.stdout and hasattr(sys.stdout, "isatty") and sys.stdout.isatty():
+                elif (
+                    sys.stdout and hasattr(sys.stdout, "isatty") and sys.stdout.isatty()
+                ):
                     stdout = sys.stdout
                 else:
                     stdout = sp.PIPE
@@ -6991,9 +6993,9 @@ BEGIN_DATA
                 data_encoding = self.pty_encoding
                 kwargs = dict(timeout=20, cwd=working_dir, env=os.environ)
                 if sys.platform == "win32":
-                    # FIX: stdio cp1252 vs utf-8 issue under Windows 10/11+
+                    # FIX: stdio cp1252 vs utf-8 (cp65001) issue under Windows 10/11+
                     # os.environ["PYTHONLEGACYWINDOWSSTDIO"] = "1"
-                    kwargs["codepage"] = 65001 # windll.kernel32.GetACP()
+                    kwargs["codepage"] = windll.kernel32.GetACP() #1252  # 65001 if capture_output else 1252
                     # As Windows' console always hard wraps at the
                     # rightmost column, increase the buffer width
                     kwargs["columns"] = 160
@@ -7013,7 +7015,11 @@ BEGIN_DATA
                     )
                 if log_output:
                     linebuffered_logfiles = []
-                    if sys.stdout and hasattr(sys.stdout, "isatty") and sys.stdout.isatty():
+                    if (
+                        sys.stdout
+                        and hasattr(sys.stdout, "isatty")
+                        and sys.stdout.isatty()
+                    ):
                         linebuffered_logfiles.append(print)
                     else:
                         linebuffered_logfiles.append(log)
@@ -7217,7 +7223,9 @@ BEGIN_DATA
                                 ):
                                     # Restore madTPG OSD and fullscreen
                                     self.madtpg_restore_settings(False)
-                                self.log(f"{appname}: Sending buffer: {self.send_buffer}")
+                                self.log(
+                                    f"{appname}: Sending buffer: {self.send_buffer}"
+                                )
                                 self._safe_send(self.send_buffer)
                                 self.send_buffer = None
                         if not self.subprocess.isalive():
@@ -11194,7 +11202,11 @@ usage: spotread [-options] [logfile]
                 ):
                     # Smooth existing B2A tables
                     linebuffered_logfiles = []
-                    if sys.stdout and hasattr(sys.stdout, "isatty") and sys.stdout.isatty():
+                    if (
+                        sys.stdout
+                        and hasattr(sys.stdout, "isatty")
+                        and sys.stdout.isatty()
+                    ):
                         linebuffered_logfiles.append(print)
                     else:
                         linebuffered_logfiles.append(log)
@@ -13138,12 +13150,12 @@ usage: spotread [-options] [logfile]
         if not os.path.exists(f"{in_out_file}.ti3"):
             return (
                 Error(
-                    lang.getstr("error.measurement.file_missing",  f"{in_out_file}.ti3")
+                    lang.getstr("error.measurement.file_missing", f"{in_out_file}.ti3")
                 ),
                 None,
             )
         if not os.path.isfile(f"{in_out_file}.ti3"):
-            return Error(lang.getstr("file_notfile",  f"{in_out_file}.ti3")), None
+            return Error(lang.getstr("file_notfile", f"{in_out_file}.ti3")), None
 
         cmd = get_argyll_util("colprof")
         args = ["-v", f"-q{getcfg('profile.quality')}", f"-a{getcfg('profile.type')}"]
@@ -13960,7 +13972,7 @@ usage: spotread [-options] [logfile]
                         # avoid profile install issues
                         profile_tmp_path = os.path.join(
                             tmp_dir,
-                            safe_asciize(profile_name).decode("utf-8", "ignore")
+                            safe_asciize(profile_name).decode("utf-8", "ignore"),
                         )
                     else:
                         profile_tmp_path = os.path.join(tmp_dir, profile_name)
@@ -15034,7 +15046,7 @@ usage: spotread [-options] [logfile]
                     src = os.path.splitext(os.path.basename(src))[0]
                 else:
                     if mods:
-                        src += " " + "".join([f"[{mod.upper()}]"  for mod in mods])
+                        src += " " + "".join([f"[{mod.upper()}]" for mod in mods])
                     src_path = get_data_path(f"ref/{src}.gam")
                 if not src_path:
                     continue
@@ -15085,6 +15097,7 @@ usage: spotread [-options] [logfile]
                     filename = tmpfilename
 
                 try:
+
                     def tweak_vrml(vrml):
                         # Set viewpoint further away
                         vrml = re.sub(
@@ -15107,7 +15120,9 @@ usage: spotread [-options] [logfile]
                             )
                         # Add range to axes
                         vrml = re.sub(
-                            rb'(string\s*\[")(\+?)(L\*)("\])', rb'\1\3", b"\2\0$\4', vrml
+                            rb'(string\s*\[")(\+?)(L\*)("\])',
+                            rb'\1\3", b"\2\0$\4',
+                            vrml,
                         )
                         vrml = re.sub(
                             rb'(string\s*\[")([+\-]?)(a\*)("\])',
@@ -15193,7 +15208,9 @@ usage: spotread [-options] [logfile]
         result = self.detect_video_levels()
         if isinstance(result, Exception) or not result:
             return result
-        capture_output = not sys.stdout or not hasattr(sys.stdout, "isatty") or not sys.stdout.isatty()
+        capture_output = False
+        if sys.stdout and hasattr(sys.stdout, "isatty") and not sys.stdout.isatty():
+            capture_output = True
         cmd, args = self.prepare_dispcal()
         if not isinstance(cmd, Exception):
             print(f"cmd: {cmd}")
@@ -16004,9 +16021,13 @@ BEGIN_DATA
                 ofile.write(b"\n")
                 ofile.write(b"NUMBER_OF_FIELDS ")
                 if include_sample_name:
-                    ofile.write(bytes(str(2 + len(icolor) + len(color_rep)), "utf-8") + b"\n")
+                    ofile.write(
+                        bytes(str(2 + len(icolor) + len(color_rep)), "utf-8") + b"\n"
+                    )
                 else:
-                    ofile.write(bytes(str(1 + len(icolor) + len(color_rep)), "utf-8") + b"\n")
+                    ofile.write(
+                        bytes(str(1 + len(icolor) + len(color_rep)), "utf-8") + b"\n"
+                    )
                 ofile.write(b"BEGIN_DATA_FORMAT\n")
                 ofile.write(b"SAMPLE_ID ")
                 if include_sample_name:
@@ -16015,7 +16036,9 @@ BEGIN_DATA
                     ofile.write(olabel + b" " + ilabel + b"\n")
                 ofile.write(b"END_DATA_FORMAT\n")
                 ofile.write(b"\n")
-                ofile.write(b"NUMBER_OF_SETS " + bytes(str(len(odata)), "utf-8") + b"\n")
+                ofile.write(
+                    b"NUMBER_OF_SETS " + bytes(str(len(odata)), "utf-8") + b"\n"
+                )
                 ofile.write(b"BEGIN_DATA\n")
             if pcs == "x":
                 # Need to scale XYZ coming from xicclu, Lab is already scaled
@@ -16225,8 +16248,10 @@ BEGIN_DATA
                 # add required fields to DATA_FORMAT if not yet present
                 if (
                     not bytes(required[0], "utf-8") in list(ti3v.DATA_FORMAT.values())
-                    and not bytes(required[1], "utf-8") in list(ti3v.DATA_FORMAT.values())
-                    and not bytes(required[2], "utf-8") in list(ti3v.DATA_FORMAT.values())
+                    and not bytes(required[1], "utf-8")
+                    in list(ti3v.DATA_FORMAT.values())
+                    and not bytes(required[2], "utf-8")
+                    in list(ti3v.DATA_FORMAT.values())
                 ):
                     ti3v.DATA_FORMAT.add_data(required)
                 ti1out.write(b'KEYWORD "COLOR_REP"\n')
@@ -16269,7 +16294,11 @@ BEGIN_DATA
                 )
                 ti1out.write(cie_.encode("utf-8"))
             else:
-                cie_ = b"%s %s %s\n" % (bytes(str(i + 1), "utf-8"), b" ".join(device), b" ".join(cie))
+                cie_ = b"%s %s %s\n" % (
+                    bytes(str(i + 1), "utf-8"),
+                    b" ".join(device),
+                    b" ".join(cie),
+                )
                 ti1out.write(cie_)
             if i > len(wp) - 1:  # don't include whitepoint patches in ti3
                 # set device values in ti3
@@ -16277,7 +16306,9 @@ BEGIN_DATA
                     # Assuming 0..100, 4 decimal digits is
                     # enough for roughly 19 bits integer
                     # device values
-                    ti3v.DATA[i - len(wp)][v.decode("utf-8")] = round(float(device[n]), 4)
+                    ti3v.DATA[i - len(wp)][v.decode("utf-8")] = round(
+                        float(device[n]), 4
+                    )
                 # set PCS values in ti3
                 for n, v in enumerate(cie):
                     ti3v.DATA[i - len(wp)][required[n]] = float(v)
@@ -16393,7 +16424,7 @@ BEGIN_DATA
             uri = response.geturl()
             filename = Path(Path(uri).name)
             actualhash = sha256()
-            if hashes and False:  # skip this for now
+            if hashes and False:  # skip this for now
                 # Read max. 64 KB hashes
                 hashesdata = hashes.read(1024 * 64)
                 hashes.close()
@@ -17136,22 +17167,18 @@ BEGIN_DATA
             and hasattr(self.patterngenerator, "conn")
         )
         if use_patterngenerator or self.use_madnet_tpg or self._use_patternwindow:
-            # sometimes the data is not fully received
+            # sometimes the data is not fully received
             if self.partial_data != "":
-                # combine the partial data with the currently received one
+                # combine the partial data with the currently received one
                 self.log(f"Combining previous data of: {self.partial_data}")
                 self.log(f"with                      : {txt}")
                 txt = self.partial_data + txt
                 self.log(f"to                        : {txt}")
 
-            rgb = re.search(
-                r"Current RGB(?:\s+\d+){3}((?:\s+\d+(?:\.\d+)){3})", txt
-            )
+            rgb = re.search(r"Current RGB(?:\s+\d+){3}((?:\s+\d+(?:\.\d+)){3})", txt)
             # Check if the data is partial
             if "Current RGB" in txt and rgb is None:
-                self.log(
-                    f"Data is not fully received, storing partial data: {txt}"
-                )
+                self.log(f"Data is not fully received, storing partial data: {txt}")
                 self.partial_data = txt
 
             if rgb:
