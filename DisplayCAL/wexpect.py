@@ -2057,6 +2057,7 @@ class Wtty(object):
             or windll.kernel32.GetOEMCP()
         )
         log(f"Code page: {self.codepage}")
+        log(f"hasattr(sys, 'frozen'): {hasattr(sys, 'frozen')}")
         self.columns = columns
         if isinstance(cwd, bytes):
             cwd = cwd.decode("utf-8")
@@ -2162,10 +2163,14 @@ class Wtty(object):
                 else os.path.join(os.path.dirname(sys.executable), "python.exe")
             ),
             " ".join(pyargs),
-            "import sys; sys.path = %s + sys.path;"
+            "import sys;%ssys.path = %s + sys.path;"
             "args = %s; from DisplayCAL import wexpect;"
             "wexpect.ConsoleReader(wexpect.join_args(args), %i, %i, cp=%s, c=%s, r=%s, logdir=%r)"
             % (
+                # this fixes running Argyll commands through py2exe frozen python
+                "setattr(sys, 'frozen', '%s'); ".format(
+                    getattr(sys, "frozen")
+                ) if hasattr(sys, "frozen") else "",
                 ("%r" % spath).replace('"', r"\""),
                 ("%r" % args).replace('"', r"\""),
                 pid,

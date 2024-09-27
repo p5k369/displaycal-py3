@@ -812,9 +812,6 @@ def build_py2exe():
     manifest_in.append("include {}".format(os.path.join("tests", "*")))
     manifest_in.append("recursive-include theme *")
     manifest_in.append("recursive-include util *.cmd *.py *.sh")
-    if sys.platform == "win32" and not setuptools:
-        # Only needed under Windows
-        manifest_in.append("global-exclude .svn/*")
     manifest_in.append("global-exclude *~")
     manifest_in.append("global-exclude *.backup")
     manifest_in.append("global-exclude *.bak")
