@@ -16824,7 +16824,7 @@ BEGIN_DATA
                     args.append("-K")
                 else:
                     args.append("-k")
-                args.append(cal_path)
+                args.append(f'"{cal_path}"')  # use quote
             if getcfg("extra_args.dispread").strip():
                 args += parse_argument_string(getcfg("extra_args.dispread"))
         result = self.add_measurement_features(

@@ -648,7 +648,6 @@ def get_data_path(relpath, rex=None):
 
     If relpath is a file, return the full path, if relpath is a directory,
     return a list of files in the intersection of searched directories.
-
     """
     if (
         not relpath
