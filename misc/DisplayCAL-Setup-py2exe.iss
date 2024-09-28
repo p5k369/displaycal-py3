@@ -14,6 +14,8 @@ AppPublisherURL=%(AppPublisherURL)s
 AppReadmeFile={app}\README.html
 AppSupportURL=%(AppSupportURL)s
 AppUpdatesURL=%(AppUpdatesURL)s
+ArchitecturesInstallIn64BitMode=x64
+ArchitecturesAllowed=x64
 DefaultDirName={pf}\%(AppName)s
 DefaultGroupName=%(AppName)s
 LicenseFile=..\LICENSE.txt
@@ -32,9 +34,9 @@ UninstallDisplayName=%(AppName)s
 UninstallDisplayIcon={app}\%(AppName)s.exe
 AlwaysShowComponentsList=false
 ShowLanguageDialog=auto
-MinVersion=0,5.1.2600
-SignTool=sign.cmd
-SignedUninstaller=yes
+MinVersion=0,6.1.2600
+;SignTool=sign.cmd
+;SignedUninstaller=yes
 
 [Languages]
 Name: english; MessagesFile: ..\misc\InnoSetup\v5\Default.isl; 
