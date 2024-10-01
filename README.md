@@ -33,7 +33,7 @@ Follow the instructions depending on you OS:
   - [Build the Installer](#build-the-installer-windows)
 - Linux and MacOS:
   - [Prerequisites](#prerequisites-linux-and-macos)
-  - [Instal through PyPI](#install-through-pypi-linux-and-macos)
+  - [Instal through PyPI](#install-through-pypi-linux--macos)
   - [Build From Source (Makefile Workflow)](#build-from-source-makefile-workflow-linux--macos)
   - [Build From Source (Manual)](#build-from-source-manual-linux--macos)
 
