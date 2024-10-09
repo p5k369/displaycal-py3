@@ -491,6 +491,7 @@ def build_py2exe():
             "Programming Language :: Python :: 3.9",
             "Programming Language :: Python :: 3.10",
             "Programming Language :: Python :: 3.11",
+            "Programming Language :: Python :: 3.12",
             "Topic :: Multimedia :: Graphics",
         ],
         "data_files": data_files,
