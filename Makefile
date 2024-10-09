@@ -23,7 +23,7 @@ venv:
 
 build: venv FORCE
 	source ./$(VIRTUALENV_DIR)/bin/activate; \
-	python3 -m build;
+	$(SYSTEM_PYTHON) -m build;
 
 install:
 	source ./$(VIRTUALENV_DIR)/bin/activate; \
@@ -62,7 +62,7 @@ new-release:
 	git merge develop
 	git tag $(VERSION)
 	git push origin main --tags
-	python3 -m build
+	$(SYSTEM_PYTHON) -m build
 # 	twine check dist/DisplayCAL-$(VERSION).whl
 	twine check dist/DisplayCAL-$(VERSION).tar.gz
 # 	twine upload dist/DisplayCAL-$(VERSION).whl
