@@ -85,7 +85,7 @@ jobs:
 
     - name: Install Python dependencies
       run: |
-        pip install -r requirements.txt
+        pip install -r requirements-tests.txt
         pip install -r requirements-dev.txt
 
     - name: Compile C-Extensions
