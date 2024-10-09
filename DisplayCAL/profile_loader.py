@@ -2780,13 +2780,13 @@ class ProfileLoader(object):
                                 )
                             )
                         # Fall back to linear calibration
-                        tagData = "vcgt"
-                        tagData += "\0" * 4  # Reserved
-                        tagData += "\0\0\0\x01"  # Formula type
+                        tagData = b"vcgt"
+                        tagData += b"\0" * 4  # Reserved
+                        tagData += b"\0\0\0\x01"  # Formula type
                         for channel in range(3):
-                            tagData += "\0\x01\0\0"  # Gamma 1.0
-                            tagData += "\0" * 4  # Min 0.0
-                            tagData += "\0\x01\0\0"  # Max 1.0
+                            tagData += b"\0\x01\0\0"  # Gamma 1.0
+                            tagData += b"\0" * 4  # Min 0.0
+                            tagData += b"\0\x01\0\0"  # Max 1.0
                         vcgt = ICCP.VideoCardGammaFormulaType(tagData, "vcgt")
                         vcgt_values = vcgt.get_values()[:3]
                         if self._reset_gamma_ramps:
