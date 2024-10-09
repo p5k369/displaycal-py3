@@ -16824,11 +16824,11 @@ BEGIN_DATA
                     args.append("-K")
                 else:
                     args.append("-k")
-                args.append(f'"{cal_path}"')  # use quote
+                args.append(cal_path)
             if getcfg("extra_args.dispread").strip():
                 args += parse_argument_string(getcfg("extra_args.dispread"))
         result = self.add_measurement_features(
-            args,
+            quote_args(args) if sys.platform == "win32" else args,
             cmd == get_argyll_util("dispread"),
             allow_nondefault_observer=is_ccxx_testchart(),
             allow_video_levels=allow_video_levels,
