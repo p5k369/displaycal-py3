@@ -81,7 +81,7 @@ jobs:
 
     - name: Install wxPython ${{ matrix.wx-version }}
       run: |
-        pip install wxPython-${{ matrix.wx-version }}
+        pip install wxPython==${{ matrix.wx-version }}
 
     - name: Install Python dependencies
       run: |
