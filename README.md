@@ -43,7 +43,7 @@ Installation Instructions (Windows)
 Install with Installer (Windows)
 --------------------------------
 
-We now have a proper [installer](https://www.github.com/eoyilmaz/releases) for Windows
+We now have a proper [installer](https://www.github.com/eoyilmaz/displaycal-py3/releases) for Windows
 and this is the preffered way of running DisplayCAL under Windows (unless you want to
 test the latest code).
 
