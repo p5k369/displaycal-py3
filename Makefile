@@ -18,10 +18,10 @@ help:
 venv:
 	$(SYSTEM_PYTHON) -m venv $(VIRTUALENV_DIR); \
 	source ./$(VIRTUALENV_DIR)/bin/activate; \
-	pip install -r requirements.txt; \
-	pip install -r requirements-dev.txt;
 
 build: venv FORCE
+	pip install -r requirements.txt; \
+	pip install -r requirements-dev.txt;
 	source ./$(VIRTUALENV_DIR)/bin/activate; \
 	$(SYSTEM_PYTHON) -m build;
 
