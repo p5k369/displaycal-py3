@@ -82,7 +82,9 @@ if isapp:
     pydir = os.path.normpath(os.path.join(exedir, "..", "Resources"))
 else:
     pyname, pyext = os.path.splitext(os.path.basename(pypath))
-    pydir = os.path.dirname(exe if isexe else os.path.abspath(__file__))
+    pydir = os.path.dirname(
+        exe if isexe else os.path.abspath(os.path.dirname(__file__))
+    )
 
 # TODO: Modifying ``data_dirs`` here was not an elegant solution, and it is not solving
 #       the problem either.
@@ -479,7 +481,7 @@ def getbitmap(name, display_missing_icon=True, scale=True, use_mask=False):
                     if not bmp.IsOk():
                         path = None
             if not path:
-                print("Warning: Missing bitmap '%s'" % name)
+                print(f"Warning: Missing bitmap '{name}'")
                 img = wx.Image(w, h)
                 img.SetMaskColour(0, 0, 0)
                 img.InitAlpha()
@@ -555,7 +557,7 @@ def get_argyll_display_number(geometry):
     for i, display in enumerate(getcfg("displays")):
         if display.find(f"@ {geometry}") > -1:
             if debug:
-                print("[D] Found display %s at index %i" % (geometry, i))
+                print(f"[D] Found display {geometry} at index {i}")
             return i
 
 
@@ -600,7 +602,7 @@ def get_icon_bundle(sizes, name):
     iconbundle = wx.IconBundle()
     if not sizes:
         # Assume ICO format
-        pth = get_data_path("theme/icons/%s.ico" % name)
+        pth = get_data_path(f"theme/icons/{name}.ico")
         if pth:
             ico = wx.Icon(pth)
             if ico.IsOk():
@@ -646,7 +648,6 @@ def get_data_path(relpath, rex=None):
 
     If relpath is a file, return the full path, if relpath is a directory,
     return a list of files in the intersection of searched directories.
-
     """
     if (
         not relpath
@@ -686,8 +687,7 @@ def get_data_path(relpath, rex=None):
                     filelist = listdir_re(curpath, rex)
                 except Exception as exception:
                     print(
-                        "Error - directory '%s' listing failed: %s"
-                        % (curpath, exception)
+                        f"Error - directory '{curpath}' listing failed: {exception}"
                     )
                 else:
                     for filename in filelist:
@@ -1058,7 +1058,7 @@ defaults = {
     "comport.number": 1,
     "comport.number.backup": 1,
     # Note: worker.Worker.enumerate_displays_and_ports() overwrites copyright
-    "copyright": "No copyright. Created with %s %s and ArgyllCMS" % (appname, version),
+    "copyright": f"No copyright. Created with {appname} {version} and ArgyllCMS",
     "dimensions.measureframe": "0.5,0.5,1.0",
     "dimensions.measureframe.unzoomed": "0.5,0.5,1.0",
     "dimensions.measureframe.whitepoint.visual_editor": "0.5,0.5,1.0",
@@ -1192,11 +1192,11 @@ defaults = {
     else "u",  # Linux, OSX
     "profile.license": "Public Domain",
     "profile.load_on_login": 1,
-    "profile.name": " ".join(
+    "profile.name": "_".join(
         [
             "%dns",
             "%out",
-            "%Y-%m-%d %H-%M",
+            "%Y-%m-%d_%H-%M",
             "%cb",
             "%wp",
             "%cB",
@@ -1455,7 +1455,7 @@ def getcfg(name, fallback=True, raw=False, cfg=cfg):
                 value = "g"
             elif name in valid_values and value not in valid_values[name]:
                 if debug:
-                    print("Invalid config value for %s: %s" % (name, value), end=" ")
+                    print(f"Invalid config value for {name}: {value}", end=" ")
                 value = None
             elif name == "copyright":
                 # Make sure DisplayCAL and Argyll version are up-to-date
@@ -1507,7 +1507,7 @@ def getcfg(name, fallback=True, raw=False, cfg=cfg):
         # colorimeter_correction_matrix_file is special because it's
         # not (only) a path
         if debug:
-            print("%s does not exist: %s" % (name, value), end=" ")
+            print(f"{name} does not exist: {value}", end=" ")
         # Normalize path (important, this turns altsep into sep under Windows)
         value = os.path.normpath(value)
         # Check if this is a relative path covered by data_dirs
@@ -1590,7 +1590,7 @@ def get_display_profile(display_no=None):
     except Exception:
         from DisplayCAL.log import log
 
-        print("ICCP.get_display_profile(%s):" % display_no, file=log)
+        print(f"ICCP.get_display_profile({display_no}):", file=log)
 
 
 standard_profiles = []
@@ -1792,8 +1792,8 @@ def makecfgdir(which="user", worker=None):
                 os.makedirs(confighome)
             except Exception as exception:
                 print(
-                    "Warning - could not create configuration directory '%s': %s"
-                    % (confighome, exception)
+                    "Warning - could not create configuration directory "
+                    f"'{confighome}': {exception}"
                 )
                 return False
     elif not os.path.exists(config_sys):
@@ -1814,8 +1814,8 @@ def makecfgdir(which="user", worker=None):
                     raise result
         except Exception as exception:
             print(
-                "Warning - could not create configuration directory '%s': %s"
-                % (config_sys, exception)
+                "Warning - could not create configuration directory "
+                f"'{config_sys}': {exception}"
             )
             return False
     return True
@@ -1831,7 +1831,7 @@ def initcfg(module=None, cfg=cfg, force_load=False):
     settings directory if nonexistent.
     """
     if module:
-        cfgbasename = "%s-%s" % (appbasename, module)
+        cfgbasename = f"{appbasename}-{module}"
     else:
         cfgbasename = appbasename
     makecfgdir()
@@ -1847,7 +1847,7 @@ def initcfg(module=None, cfg=cfg, force_load=False):
         cfgnames.append(cfgbasename)
     else:
         cfgnames.extend(
-            "%s-%s" % (appbasename, othermod) for othermod in ("testchart-editor",)
+            f"{appbasename}-{othermod}" for othermod in ("testchart-editor",)
         )
 
     cfgroots = [confighome]
@@ -1862,7 +1862,7 @@ def initcfg(module=None, cfg=cfg, force_load=False):
                 try:
                     mtime = os.stat(cfgfile).st_mtime
                 except EnvironmentError as exception:
-                    print("Warning - os.stat('%s') failed: %s" % (cfgfile, exception))
+                    print(f"Warning - os.stat('{cfgfile}') failed: {exception}")
                 last_checked = cfginited.get(cfgfile)
                 if force_load or mtime != last_checked:
                     cfginited[cfgfile] = mtime
@@ -1888,7 +1888,9 @@ def initcfg(module=None, cfg=cfg, force_load=False):
     # if it can't be parsed
     except Exception:
         print(
-            "Warning - could not parse configuration files:\n%s" % "\n".join(cfgfiles)
+            "Warning - could not parse configuration files:\n%s".format(
+                "\n".join(cfgfiles)
+            )
         )
         # Fix Python 2.7 ConfigParser option values being lists instead of
         # strings in case of a ParsingError. http://bugs.python.org/issue24142
@@ -2128,7 +2130,7 @@ def writecfg(which="user", worker=None, module=None, options=(), cfg=cfg):
     worker: worker instance if ``which == 'system'``
     """
     if module:
-        cfgbasename = "%s-%s" % (appbasename, module)
+        cfgbasename = f"{appbasename}-{module}"
     else:
         cfgbasename = appbasename
     # Remove unknown options
@@ -2154,13 +2156,12 @@ def writecfg(which="user", worker=None, module=None, options=(), cfg=cfg):
                 optionlines = lines[1:]
             # Sorting works as long as config has only one section
             lines = lines[:1] + sorted(optionlines)
-            cfgfile = open(cfgfilename, "wb")
-            cfgfile.write((os.linesep.join(lines) + os.linesep).encode())
-            cfgfile.close()
+            with open(cfgfilename, "wb") as cfgfile:
+                cfgfile.write((os.linesep.join(lines) + os.linesep).encode())
         except Exception as exception:
             print(
                 "Warning - could not write user configuration file "
-                "'%s': %s" % (cfgfilename, exception)
+                f"'{cfgfilename}': {exception}"
             )
             return False
     else:
@@ -2176,12 +2177,11 @@ def writecfg(which="user", worker=None, module=None, options=(), cfg=cfg):
             if getcfg("argyll.dir"):
                 cfgfile.write(
                     (
-                        "%s%s"
-                        % (
+                        "%s%s".format(
                             os.linesep.join(
                                 [
                                     "[Default]",
-                                    "%s = %s" % ("argyll.dir", getcfg("argyll.dir")),
+                                    f"argyll.dir = {getcfg('argyll.dir')}",
                                 ]
                             ),
                             os.linesep,
@@ -2205,8 +2205,8 @@ def writecfg(which="user", worker=None, module=None, options=(), cfg=cfg):
                     raise result
         except Exception as exception:
             print(
-                "Warning - could not write system-wide configuration file '%s': %s"
-                % (cfgfilename2, exception)
+                "Warning - could not write system-wide configuration file "
+                f"'{cfgfilename2}': {exception}"
             )
             return False
     return True
