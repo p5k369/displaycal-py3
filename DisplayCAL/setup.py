@@ -398,6 +398,9 @@ def get_data(tgt_dir, key, pkgname=None, subkey=None, excludes=None):
         if not [exclude for exclude in excludes or [] if fnmatch(pth, exclude)]:
             normalized_path = os.path.normpath(os.path.join(tgt_dir, os.path.dirname(pth)))
             safe_path = [relpath(p, src_dir) for p in safe_glob(os.path.join(src_dir, pth))]
+            if pkgname:
+                # try looking for the "{src_dir}/{pkgname}/{pth}" too
+                safe_path += [relpath(p, src_dir) for p in safe_glob(os.path.join(src_dir, pkgname, pth))]
             data.append((normalized_path, safe_path))
     return data
 
