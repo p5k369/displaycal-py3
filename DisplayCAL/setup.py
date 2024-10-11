@@ -199,7 +199,7 @@ def add_lib_excludes(key, excludebits):
         config["excludes"][key].extend([f"{name}.lib{exclude}", f"lib{exclude}"])
 
     for exclude in ("32", "64"):
-        for pycompat in ("38", "39", "310", "311"):
+        for pycompat in ("38", "39", "310", "311", "312"):
             if key == "win32" and (
                 pycompat == str(sys.version_info[0]) + str(sys.version_info[1])
                 or exclude == excludebits[0]
@@ -370,12 +370,24 @@ def create_app_symlinks(dist_dir, scripts):
 
 
 def get_data(tgt_dir, key, pkgname=None, subkey=None, excludes=None):
-    """Return configured data files."""
+    """Return configured data files.
+
+    Args:
+        tgt_dir (str): The target directory.
+        key (str): The config key.
+        pkgname (Union[None, str]): Name of the package. Default is None.
+        subkey (Union[None, str]): Name of the subkey. Default is None.
+        excludes (Union[None, List[str]]): List of files to exclude. Default is None.
+
+    Returns:
+        List[str]: List of strings showing the paths of the data files.
+    """
     files = config[key]
     src_dir = source_dir
     if pkgname:
         files = files[pkgname]
-        src_dir = os.path.join(src_dir, pkgname)
+        # modifying the src_dir is not working with py2app, so disabling it.
+        # src_dir = os.path.join(src_dir, pkgname)
         if subkey:
             if subkey in files:
                 files = files[subkey]
@@ -469,12 +481,6 @@ def setup():
     if use_setuptools:
         if "--use-setuptools" in sys.argv[1:] and not os.path.exists("use-setuptools"):
             open("use-setuptools", "w").close()
-        # try:
-        #     from ez_setup import use_setuptools as ez_use_setuptools
-        #
-        #     ez_use_setuptools()
-        # except ImportError:
-        #     pass
         try:
             import setuptools
             from setuptools import setup, Extension, find_packages
@@ -1109,7 +1115,7 @@ setup(ext_modules=[Extension("{name}.lib{bits}.RealDisplaySizeMM", sources={sour
         py2app_cls.copy_package_data = copy_package_data
         attrs["options"] = {
             "py2app": {
-                "argv_emulation": True,
+                "argv_emulation": False,
                 "dist_dir": dist_dir,
                 "excludes": config["excludes"]["all"] + config["excludes"]["darwin"],
                 "iconfile": os.path.join(pydir, "theme", "icons", f"{name}.icns"),
