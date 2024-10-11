@@ -263,7 +263,7 @@ Please install these from your package manager.
 brew install glib gtk+3 python@3.11
 
 # Debian installs
-apt-get install build-essential dbus libglib2.0-dev pkg-config libgtk-3-dev libxxf86vm-dev
+apt-get install build-essential dbus libglib2.0-dev pkg-config libgtk-3-dev libxxf86vm-dev python3-dev
 
 # Fedora core installs
 dnf install gcc glibc-devel dbus pkgconf gtk3-devel libXxf86vm-devel python3-devel
