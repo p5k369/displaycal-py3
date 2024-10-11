@@ -13518,7 +13518,7 @@ usage: spotread [-options] [logfile]
             luminance = getcfg("calibration.luminance", False)
             self.log(f"{appname}: luminance: {luminance}")
             if luminance is not None:
-                args.append("-b{luminance}")
+                args.append(f"-b{luminance}")
             if getcfg("trc"):
                 args.append("-" + getcfg("trc.type") + str(getcfg("trc")))
                 args.append("-f%s" % getcfg("calibration.black_output_offset"))
