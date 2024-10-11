@@ -2123,7 +2123,7 @@ class Wtty(object):
     def startChild(self, args, env):
         si = GetStartupInfo()
         si.dwFlags = STARTF_USESHOWWINDOW
-        si.wShowWindow = SW_HIDE  # SW_SHOW
+        si.wShowWindow = SW_HIDE
         # Determine the directory of wexpect.py or, if we are running 'frozen'
         # (eg. py2exe deployment), of the packed executable
         dirname = os.path.dirname(
@@ -2984,20 +2984,18 @@ def log(e, suffix="", logdir=None):
                     except Exception:
                         pass
         try:
-            fout = open(logfile, "a")
+            with open(logfile, "a", encoding="utf-8") as fout:
+                ts = time.time()
+                fout.write(
+                    "%s,%s %s\n"
+                    % (
+                        time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(ts)),
+                        ("%3f" % (ts - int(ts)))[2:5],
+                        e,
+                    )
+                )
         except Exception:
             pass
-        else:
-            ts = time.time()
-            fout.write(
-                "%s,%s %s\n"
-                % (
-                    time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(ts)),
-                    ("%3f" % (ts - int(ts)))[2:5],
-                    e,
-                )
-            )
-            fout.close()
 
 
 def excepthook(etype, value, tb):

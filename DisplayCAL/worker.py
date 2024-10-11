@@ -7086,8 +7086,6 @@ BEGIN_DATA
                             raise Error(lang.getstr("windows.version.unsupported"))
 
                         try:
-                            # print(f"cmdline: {cmdline}")
-                            # print(f"kwargs : {kwargs}")
                             self.subprocess = wexpect.spawn(
                                 cmdline[0], cmdline[1:], **kwargs
                             )

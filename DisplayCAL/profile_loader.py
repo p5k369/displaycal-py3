@@ -118,7 +118,7 @@ if sys.platform == "win32":
         if sys.getwindowsversion() >= (6,):
             from DisplayCAL import taskscheduler
 
-            taskname = appname + " Profile Loader Launcher"
+            taskname = f"{appname} Profile Loader Launcher"
 
             try:
                 ts = taskscheduler.TaskScheduler()
