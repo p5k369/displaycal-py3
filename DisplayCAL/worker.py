@@ -7086,8 +7086,6 @@ BEGIN_DATA
                             raise Error(lang.getstr("windows.version.unsupported"))
 
                         try:
-                            # print(f"cmdline: {cmdline}")
-                            # print(f"kwargs : {kwargs}")
                             self.subprocess = wexpect.spawn(
                                 cmdline[0], cmdline[1:], **kwargs
                             )
@@ -13520,7 +13518,7 @@ usage: spotread [-options] [logfile]
             luminance = getcfg("calibration.luminance", False)
             self.log(f"{appname}: luminance: {luminance}")
             if luminance is not None:
-                args.append("-b{luminance}")
+                args.append(f"-b{luminance}")
             if getcfg("trc"):
                 args.append("-" + getcfg("trc.type") + str(getcfg("trc")))
                 args.append("-f%s" % getcfg("calibration.black_output_offset"))
