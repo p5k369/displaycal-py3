@@ -529,12 +529,8 @@ def app_update_confirm(
     newversion = ".".join(str(n) for n in newversion_tuple)
     if argyll:
         newversion_desc = "ArgyllCMS"
-        # TODO: I hate this, but this is the easiest way to fix
-        #       https://github.com/eoyilmaz/displaycal-py3/issues/291
-        #       we don't have access to displaycal.net to update the ArgylCMS
-        #       version. So, this mechanism should be updated to use some
-        #       other way of getting newer app versions...
-        newversion = "3.3.0"
+        changelog = re.search(r'(?<=Version ).{5}', urllib.request.urlopen('https://www.argyllcms.com/log.txt').read(150).decode('utf-8'))
+        newversion = changelog.group()
     else:
         newversion_desc = appname
     newversion_desc += f" {newversion}"

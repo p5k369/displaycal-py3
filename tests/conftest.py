@@ -55,17 +55,22 @@ def argyll():
     This will search for ArgyllCMS binaries under ``.local/bin/Argyll*/bin`` and if it
     can not find it, it will download from the source.
     """
+    import urllib.request 
+    import re
+    changelog = re.search(r'(?<=Version ).{5}', urllib.request.urlopen('https://www.argyllcms.com/log.txt').read(150).decode('utf-8'))
+    newversion = changelog.group()
+
     argyll_download_url = {
-        "win32": "https://www.argyllcms.com/Argyll_V3.3.0_win64_exe.zip",
-        "darwin": "https://www.argyllcms.com/Argyll_V3.3.0_osx10.6_x86_64_bin.tgz",
-        "linux": "https://www.argyllcms.com/Argyll_V3.3.0_linux_x86_64_bin.tgz",
+        "win32": "https://www.argyllcms.com/Argyll_V"+newversion+"_win64_exe.zip",
+        "darwin": "https://www.argyllcms.com/Argyll_V"+newversion+"_osx10.6_x86_64_bin.tgz",
+        "linux": "https://www.argyllcms.com/Argyll_V"+newversion+"_linux_x86_64_bin.tgz",
     }
 
     # first look in to ~/local/bin/ArgyllCMS
     home = pathlib.Path().home()
     argyll_search_paths = [
         home / ".local" / "bin" / "Argyll" / "bin",
-        home / ".local" / "bin" / "Argyll_V3.3.0" / "bin",
+        home / ".local" / "bin" / str("Argyll_V"+newversion) / "bin",
     ]
 
     argyll_path = None
@@ -108,7 +113,7 @@ def argyll():
         shutil.rmtree(argyll_temp_path)
         os.chdir(current_working_directory)
 
-    argyll_path = pathlib.Path(argyll_temp_path) / "Argyll_V3.3.0" / "bin"
+    argyll_path = pathlib.Path(argyll_temp_path) / str("Argyll_V"+newversion) / "bin"
     print(f"argyll_path: {argyll_path}")
     if argyll_path.is_dir():
         setcfg("argyll.dir", str(argyll_path.absolute()))
