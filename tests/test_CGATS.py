@@ -31,43 +31,43 @@ def test_cgats_with_sample_data_1(data_files):
     assert (
         cgats[0]["BARBIERI_INFO_1"]
         == b"<Type>eChartJob</Type>, <ReferenceCheck>1</ReferenceCheck>, <JobName>IT8_"
-           b"7-4-M1</JobName>, Spectro_xy_version=1, Spectro_xy_version=1,File_Format="
-           b"BARBIERI - Horizontal (default),Patches_X=24,"
+        b"7-4-M1</JobName>, Spectro_xy_version=1, Spectro_xy_version=1,File_Format="
+        b"BARBIERI - Horizontal (default),Patches_X=24,"
     )
     assert (
         cgats[0]["BARBIERI_INFO_2"]
         == b"Patches_Y=17,Number_of_Patches=1617,Number_of_Pages=4,Target_Size_X=277,T"
-           b"arget_Size_Y=206,MR,Illuminant=D50,Observer=10,Density=Status T,Save_Spec"
-           b"tral=1,Save_Lab=1,Save_XYZ=1,Save_Density=1,"
+        b"arget_Size_Y=206,MR,Illuminant=D50,Observer=10,Density=Status T,Save_Spec"
+        b"tral=1,Save_Lab=1,Save_XYZ=1,Save_Density=1,"
     )
     assert (
         cgats[0]["BARBIERI_INFO_3"]
         == b"Save_CxF=255,Fast_Measuring_Mode=1,Use_AutoPositioning=1,Use_AutoRecognit"
-           b"ion=0,Run_Profiler=0,Reference_File_Name=References/IT8_7-4 CMYK visual.r"
-           b"ef,Quality_Control=0,Control_Reference_File=,"
+        b"ion=0,Run_Profiler=0,Reference_File_Name=References/IT8_7-4 CMYK visual.r"
+        b"ef,Quality_Control=0,Control_Reference_File=,"
     )
     assert (
         cgats[0]["BARBIERI_INFO_4"]
         == b"Control_Settings_File=,Profile_File_Name=,Target_Image_Preview=Previews/I"
-           b"T8_7-4 CMYK visual.bmp,Spot_Measurement_Mode=0,Spot_Measurement=0,Display"
-           b"_Values=0,Number_of_Measurements_per_Patch_y=1,"
+        b"T8_7-4 CMYK visual.bmp,Spot_Measurement_Mode=0,Spot_Measurement=0,Display"
+        b"_Values=0,Number_of_Measurements_per_Patch_y=1,"
     )
     assert (
         cgats[0]["BARBIERI_INFO_5"]
         == b"Distance_of_Measurements_per_Patch_y=10,Number_of_Measurements_per_Patch_"
-           b"x=1,Distance_of_Measurements_per_Patch_x=10,Average_Method=1,Target_Heade"
-           b"r_Size=20,AutoPositioning_Mode=0,"
+        b"x=1,Distance_of_Measurements_per_Patch_x=10,Average_Method=1,Target_Heade"
+        b"r_Size=20,AutoPositioning_Mode=0,"
     )
     assert (
         cgats[0]["BARBIERI_INFO_6"]
         == b"Continuous_Measurement_Mode=0,Save_Continuous_Measurement=0,Continuous_Me"
-           b"asurement_Delay=0,CF_Option=1,Calibration_Frequency=0,Measuring_Aperture="
-           b"6,Slope_Factor=1.000,Job_protection=-1,"
+        b"asurement_Delay=0,CF_Option=1,Calibration_Frequency=0,Measuring_Aperture="
+        b"6,Slope_Factor=1.000,Job_protection=-1,"
     )
     assert (
         cgats[0]["BARBIERI_INFO_7"]
         == b"Measurement_Condition=M1,Translucency_Mode=0,Translucency_IntTime=1000,Sa"
-           b"ve_Debug=0,"
+        b"ve_Debug=0,"
     )
     assert (
         cgats[0]["MEASUREMENT_SOURCE"]
@@ -78,7 +78,7 @@ def test_cgats_with_sample_data_1(data_files):
     assert (
         cgats[0]["PRINT_CONDITIONS"]
         == b"No printer defined, No resolution defined, No ink defined, No paper defi"
-           b"ned, No screening defined"
+        b"ned, No screening defined"
     )
     assert cgats[0]["NUMBER_OF_FIELDS"] == 52
     assert isinstance(cgats[0]["DATA_FORMAT"], CGATS.CGATS)
@@ -179,43 +179,43 @@ def test_cgats_with_sample_data_1A(data_files):
     assert (
         cgats[0]["BARBIERI_INFO_1"]
         == b"<Type>eChartJob</Type>, <ReferenceCheck>1</ReferenceCheck>, <JobName>IT8_"
-           b"7-4-M1</JobName>, Spectro_xy_version=1, Spectro_xy_version=1,File_Format="
-           b"BARBIERI - Horizontal (default),Patches_X=24,"
+        b"7-4-M1</JobName>, Spectro_xy_version=1, Spectro_xy_version=1,File_Format="
+        b"BARBIERI - Horizontal (default),Patches_X=24,"
     )
     assert (
         cgats[0]["BARBIERI_INFO_2"]
         == b"Patches_Y=17,Number_of_Patches=1617,Number_of_Pages=4,Target_Size_X=277,T"
-           b"arget_Size_Y=206,MR,Illuminant=D50,Observer=10,Density=Status T,Save_Spec"
-           b"tral=1,Save_Lab=1,Save_XYZ=1,Save_Density=1,"
+        b"arget_Size_Y=206,MR,Illuminant=D50,Observer=10,Density=Status T,Save_Spec"
+        b"tral=1,Save_Lab=1,Save_XYZ=1,Save_Density=1,"
     )
     assert (
         cgats[0]["BARBIERI_INFO_3"]
         == b"Save_CxF=255,Fast_Measuring_Mode=1,Use_AutoPositioning=1,Use_AutoRecognit"
-           b"ion=0,Run_Profiler=0,Reference_File_Name=References/IT8_7-4 CMYK visual.r"
-           b"ef,Quality_Control=0,Control_Reference_File=,"
+        b"ion=0,Run_Profiler=0,Reference_File_Name=References/IT8_7-4 CMYK visual.r"
+        b"ef,Quality_Control=0,Control_Reference_File=,"
     )
     assert (
         cgats[0]["BARBIERI_INFO_4"]
         == b"Control_Settings_File=,Profile_File_Name=,Target_Image_Preview=Previews/I"
-           b"T8_7-4 CMYK visual.bmp,Spot_Measurement_Mode=0,Spot_Measurement=0,Display"
-           b"_Values=0,Number_of_Measurements_per_Patch_y=1,"
+        b"T8_7-4 CMYK visual.bmp,Spot_Measurement_Mode=0,Spot_Measurement=0,Display"
+        b"_Values=0,Number_of_Measurements_per_Patch_y=1,"
     )
     assert (
         cgats[0]["BARBIERI_INFO_5"]
         == b"Distance_of_Measurements_per_Patch_y=10,Number_of_Measurements_per_Patch_"
-           b"x=1,Distance_of_Measurements_per_Patch_x=10,Average_Method=1,Target_Heade"
-           b"r_Size=20,AutoPositioning_Mode=0,"
+        b"x=1,Distance_of_Measurements_per_Patch_x=10,Average_Method=1,Target_Heade"
+        b"r_Size=20,AutoPositioning_Mode=0,"
     )
     assert (
         cgats[0]["BARBIERI_INFO_6"]
         == b"Continuous_Measurement_Mode=0,Save_Continuous_Measurement=0,Continuous_Me"
-           b"asurement_Delay=0,CF_Option=1,Calibration_Frequency=0,Measuring_Aperture="
-           b"6,Slope_Factor=1.000,Job_protection=-1,"
+        b"asurement_Delay=0,CF_Option=1,Calibration_Frequency=0,Measuring_Aperture="
+        b"6,Slope_Factor=1.000,Job_protection=-1,"
     )
     assert (
         cgats[0]["BARBIERI_INFO_7"]
         == b"Measurement_Condition=M1,Translucency_Mode=0,Translucency_IntTime=1000,Sa"
-           b"ve_Debug=0,"
+        b"ve_Debug=0,"
     )
     assert (
         cgats[0]["MEASUREMENT_SOURCE"]
@@ -226,7 +226,7 @@ def test_cgats_with_sample_data_1A(data_files):
     assert (
         cgats[0]["PRINT_CONDITIONS"]
         == b"No printer defined, No resolution defined, No ink defined, No paper defi"
-           b"ned, No screening defined"
+        b"ned, No screening defined"
     )
     assert cgats[0]["NUMBER_OF_FIELDS"] == 52
     assert isinstance(cgats[0]["DATA_FORMAT"], CGATS.CGATS)
@@ -405,7 +405,7 @@ def test_cgats_get_method(data_files):
     """Test ``DisplayCAL.CGATS.CGATS`` get() method."""
     path = data_files["default.ti3"].absolute()
     cgats = CGATS.CGATS(cgats=path)
-    result = cgats.get(0)['DESCRIPTOR']
+    result = cgats.get(0)["DESCRIPTOR"]
     expected_result = b"Argyll Calibration Target chart information 3"
     assert result == expected_result
 
@@ -414,7 +414,7 @@ def test_cgats_getitem_method_1(data_files):
     """Test ``DisplayCAL.CGATS.CGATS`` get() method."""
     path = data_files["default.ti3"].absolute()
     cgats = CGATS.CGATS(cgats=path)
-    result = cgats[0]['DESCRIPTOR']
+    result = cgats[0]["DESCRIPTOR"]
     expected_result = b"Argyll Calibration Target chart information 3"
     assert result == expected_result
 
@@ -423,8 +423,8 @@ def test_cgats_getitem_method_2(data_files):
     """Test ``DisplayCAL.CGATS.CGATS`` get() method."""
     path = data_files["default.ti3"].absolute()
     cgats = CGATS.CGATS(cgats=path)
-    result = cgats[-1]['DESCRIPTOR']
-    expected_result = b'Argyll Device Calibration State'
+    result = cgats[-1]["DESCRIPTOR"]
+    expected_result = b"Argyll Device Calibration State"
     assert result == expected_result
 
 
@@ -480,6 +480,7 @@ def test_cgats_fix_zero_measurements_7(data_files):
 def test_cgats_fix_zero_measurements_8(data_files):
     """Test DisplayCAL.CGATS.CGATS.fix_zero_measurements() method. For #68."""
     from DisplayCAL.worker import Worker
+
     worker = Worker()
     worker.get_logfiles(False)
 
@@ -492,6 +493,7 @@ def test_export_3d_1(data_files):
     """Test DisplayCAL.CGATS.CGATS.export_3d() method."""
     import pathlib
     import tempfile
+
     export_path = pathlib.Path(tempfile.gettempdir()) / "ccxx_RGB.x3d.html"
     path = data_files["Monitor.ti1"].absolute()
     cgats = CGATS.CGATS(cgats=path)
@@ -686,6 +688,7 @@ def test_cgats_sorting_1(data_files, function: str, result: List[List[float]]) -
 
 class ColorCombination(TypedDict):
     """Color combination with sorted result list."""
+
     red: bool
     green: bool
     blue: bool
@@ -940,7 +943,9 @@ def test_cgats_checkerboard(
         assert calls[0][0][1] == result
 
 
-@pytest.mark.parametrize("name", ['fails_when_unstable', 'ok_when_unstable', 'large_set'])
+@pytest.mark.parametrize(
+    "name", ["fails_when_unstable", "ok_when_unstable", "large_set"]
+)
 def test_cgats_maximise_lightness_sort_is_invariant_to_input(data_files, name):
     path = data_files[f"{name}.ti1"].absolute()
     cgats = CGATS.CGATS(cgats=path)
@@ -1052,7 +1057,7 @@ def test_cgats_convert_XYZ_to_Lab(data_files) -> None:
     path = data_files["0_16_proper.ti3"].absolute()
     cgats = CGATS.CGATS(cgats=path)
     cgats.convert_XYZ_to_Lab()
-    assert all(key in cgats[0]["DATA"][0] for key in [b'LAB_L', b'LAB_A', b'LAB_B'])
+    assert all(key in cgats[0]["DATA"][0] for key in [b"LAB_L", b"LAB_A", b"LAB_B"])
 
 
 @pytest.mark.parametrize("warn", (True, False), ids=("warn only", "take action"))

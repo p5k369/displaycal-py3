@@ -7,6 +7,7 @@ import sys
 def test_default_values_1():
     """Test default values of module level variables."""
     from DisplayCAL import config
+
     config.initcfg()
 
     assert config.configparser.DEFAULTSECT == "Default"

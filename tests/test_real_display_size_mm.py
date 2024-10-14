@@ -117,8 +117,7 @@ def test_get_x_icc_profile_atom_id(function) -> None:
     assert isinstance(result, int)
 
 
-@pytest.mark.skipif('fake_dbus' not in sys.modules,
-                    reason="requires the DBus library")
+@pytest.mark.skipif("fake_dbus" not in sys.modules, reason="requires the DBus library")
 def test_get_wayland_display(monkeypatch: MonkeyPatch) -> None:
     """Test if wayland display is returned."""
     with mock.patch.object(RealDisplaySizeMM, "DBusObject", new=FakeDBusObject):

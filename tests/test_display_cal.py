@@ -109,7 +109,7 @@ def test_donation_message(mainframe: MainFrame, response: int) -> None:
 # todo: test is working locally but not on CI
 @pytest.mark.skip(
     reason="Seems like the first call of ShowWindowModalBlocking always fails on remote."
-           "Locally however the problem cannot be reproduced, skipping test for now."
+    "Locally however the problem cannot be reproduced, skipping test for now."
 )
 @pytest.mark.parametrize(
     "update", (True, False), ids=("update comports", "dont update comports")
@@ -217,7 +217,10 @@ def test_init_gamap_frame(mainframe: MainFrame) -> None:
 def test_init_startup_frame() -> None:
     """Test if StartupFrame is initialized properly."""
     show_func_name = "Show"
-    if (sys.platform == "darwin" and intlist(platform.mac_ver()[0].split(".")) >= [10, 10]) or os.getenv("XDG_SESSION_TYPE") == "wayland":
+    if (
+        sys.platform == "darwin"
+        and intlist(platform.mac_ver()[0].split(".")) >= [10, 10]
+    ) or os.getenv("XDG_SESSION_TYPE") == "wayland":
         show_func_name = "ShowModal"
 
     with check_call(StartupFrame, show_func_name):

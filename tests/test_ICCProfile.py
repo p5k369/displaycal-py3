@@ -7,17 +7,17 @@ from time import strftime
 
 from DisplayCAL import ICCProfile, colormath
 from DisplayCAL.ICCProfile import (
-    uInt8Number_tohex,
-    uInt32Number_tohex,
-    s15Fixed16Number_tohex,
-    uInt16Number_tohex,
-    DictType,
-    hexrepr,
     cmms,
     dateTimeNumber,
+    DictType,
+    hexrepr,
     ICCProfileTag,
+    MultiLocalizedUnicodeType,
+    s15Fixed16Number_tohex,
     Text,
-    MultiLocalizedUnicodeType, Observer,
+    uInt8Number_tohex,
+    uInt16Number_tohex,
+    uInt32Number_tohex,
 )
 
 
@@ -38,7 +38,11 @@ def test_iccprofile_from_rgb_space():
         ["Color model", "RGB"],
         ["Profile connection space (PCS)", "XYZ"],
         ["Created", "2022-03-09 00:19:53"],
-        ["Platform", "Apple"] if sys.platform == "darwin" else ["Platform", "0x2A6E6978 '*nix'"],
+        (
+            ["Platform", "Apple"]
+            if sys.platform == "darwin"
+            else ["Platform", "0x2A6E6978 '*nix'"]
+        ),
         ["Is embedded", "No"],
         ["Can be used independently", "Yes"],
         ["Device", ""],
@@ -62,9 +66,9 @@ def test_iccprofile_from_rgb_space():
         ["        ", "-0.7502 1.7135 0.0367"],
         ["        ", "0.0389 -0.0685 1.0296"],
         ["Chromaticity (illuminant-relative)", ""],
-        ['    Channel 1 (R) xy', '0.6400 0.3300'],
-        ['    Channel 2 (G) xy', '0.3000 0.6000'],
-        ['    Channel 3 (B) xy', '0.1500 0.0600'],
+        ["    Channel 1 (R) xy", "0.6400 0.3300"],
+        ["    Channel 2 (G) xy", "0.3000 0.6000"],
+        ["    Channel 3 (B) xy", "0.1500 0.0600"],
         ["Red matrix column", ""],
         ["    Illuminant-relative XYZ", " 41.24  21.26   1.93 (xy 0.6400 0.3300)"],
         ["    PCS-relative XYZ", " 43.60  22.25   1.39 (xy 0.6484 0.3309)"],
@@ -179,7 +183,11 @@ def test_iccprofile_get_info():
         ["Color model", "RGB"],
         ["Profile connection space (PCS)", "XYZ"],
         ["Created", "2022-02-14 02:44:22"],
-        ["Platform", "Apple"] if sys.platform == "darwin" else ["Platform", "0x2A6E6978 '*nix'"],
+        (
+            ["Platform", "Apple"]
+            if sys.platform == "darwin"
+            else ["Platform", "0x2A6E6978 '*nix'"]
+        ),
         ["Is embedded", "No"],
         ["Can be used independently", "Yes"],
         ["Device", ""],
@@ -752,12 +760,10 @@ def test_gamut_coverage_1(data_files):
     )
     cinfo = []
     for key, name, _volume in gamuts:
-        gamut_coverage = float(
-            iccp.tags.meta.getvalue("GAMUT_coverage(%s)" % key)
-        )
+        gamut_coverage = float(iccp.tags.meta.getvalue(f"GAMUT_coverage({key})"))
         if gamut_coverage:
             cinfo.append("%.1f%% %s" % (gamut_coverage * 100, name))
-    assert cinfo == ['99.7% sRGB', '99.1% Adobe RGB', '93.0% DCI P3']
+    assert cinfo == ["99.7% sRGB", "99.1% Adobe RGB", "93.0% DCI P3"]
 
 
 def test_gamut_volume_1(data_files):
@@ -778,14 +784,11 @@ def test_gamut_volume_1(data_files):
         vinfo.append(
             "%.1f%% %s"
             % (
-                gamut_volume
-                * ICCProfile.GAMUT_VOLUME_SRGB
-                / volume
-                * 100,
+                gamut_volume * ICCProfile.GAMUT_VOLUME_SRGB / volume * 100,
                 name,
             )
         )
-    assert vinfo == ['169.3% sRGB', '116.7% Adobe RGB', '120.0% DCI P3']
+    assert vinfo == ["169.3% sRGB", "116.7% Adobe RGB", "120.0% DCI P3"]
 
 
 def test_set_gamut_metadata_1(data_files):
@@ -795,19 +798,19 @@ def test_set_gamut_metadata_1(data_files):
     ]
     iccp = ICCProfile.ICCProfile(icc_profile_path)
 
-    assert iccp.tags.meta["GAMUT_volume"] == '1.6934613892142165'
-    assert iccp.tags.meta["GAMUT_coverage(srgb)"] == '0.9967'
-    assert iccp.tags.meta["GAMUT_coverage(dci-p3)"] == '0.9296'
-    assert iccp.tags.meta["GAMUT_coverage(adobe-rgb)"] == '0.9906'
+    assert iccp.tags.meta["GAMUT_volume"] == "1.6934613892142165"
+    assert iccp.tags.meta["GAMUT_coverage(srgb)"] == "0.9967"
+    assert iccp.tags.meta["GAMUT_coverage(dci-p3)"] == "0.9296"
+    assert iccp.tags.meta["GAMUT_coverage(adobe-rgb)"] == "0.9906"
 
     gamut_volume = 1.695547156240974
-    gamut_coverage = {'srgb': 0.9973000000000001, 'dci-p3': 0.9269, 'adobe-rgb': 0.9897}
+    gamut_coverage = {"srgb": 0.9973000000000001, "dci-p3": 0.9269, "adobe-rgb": 0.9897}
     iccp.set_gamut_metadata(gamut_volume=gamut_volume, gamut_coverage=gamut_coverage)
 
     assert iccp.tags.meta["GAMUT_volume"] == gamut_volume
-    assert iccp.tags.meta["GAMUT_coverage(srgb)"] == gamut_coverage['srgb']
-    assert iccp.tags.meta["GAMUT_coverage(dci-p3)"] == gamut_coverage['dci-p3']
-    assert iccp.tags.meta["GAMUT_coverage(adobe-rgb)"] == gamut_coverage['adobe-rgb']
+    assert iccp.tags.meta["GAMUT_coverage(srgb)"] == gamut_coverage["srgb"]
+    assert iccp.tags.meta["GAMUT_coverage(dci-p3)"] == gamut_coverage["dci-p3"]
+    assert iccp.tags.meta["GAMUT_coverage(adobe-rgb)"] == gamut_coverage["adobe-rgb"]
 
 
 def test_MultiLocalizedUnicodeType_str_method(data_files):

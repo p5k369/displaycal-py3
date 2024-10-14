@@ -1,4 +1,5 @@
 """Sample DisplayData class."""
+
 import sys
 from typing import Dict, List
 
@@ -82,7 +83,9 @@ class DisplayData:
             "argyll.dir": None,
             "argyll.version": "0.0.0",
             "calibration.use_video_lut.backup": 1,
-            "displays": ["Monitor 1, Output DP-2 @ 0, 0, 1280x1024",],
+            "displays": [
+                "Monitor 1, Output DP-2 @ 0, 0, 1280x1024",
+            ],
             "display.number": 0,
         }[name]
 
@@ -298,6 +301,7 @@ class DisplayData:
     def Geometry(self):
         """Return a wx Rect as display geometry."""
         from wx import Rect
+
         return Rect(
             self.DISPLAY_DATA_1["pos"][0],
             self.DISPLAY_DATA_1["pos"][1],
