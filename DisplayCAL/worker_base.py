@@ -355,6 +355,15 @@ def get_argyll_version(name, paths=None):
 
 
 def get_argyll_version_string(name, paths=None):
+    """Return the version of the requested Argyll utility.
+
+    Args:
+        name (str): The name of the Argyll utility.
+        paths (Union[list, None]): Paths to look for Argyll executables.
+
+    Returns:
+        str: The Argyll utility version.
+    """
     argyll_version_string = b"0.0.0"
     cmd = get_argyll_util(name, paths)
     if sys.platform == "win32":

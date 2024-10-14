@@ -196,22 +196,24 @@ def get_edid(display_no=0, display_name=None, device=None):
         # Get EDID via ioreg
         p = sp.Popen(["ioreg", "-c", "IODisplay", "-S", "-w0"], stdout=sp.PIPE)
         stdout, stderr = p.communicate()
-        if stdout:
-            for edid in [
-                binascii.unhexlify(edid_hex)
-                for edid_hex in re.findall(
-                    r'"IODisplayEDID"\s*=\s*<([0-9A-Fa-f]*)>', stdout.decode()
-                )
-            ]:
-                if edid and len(edid) >= 128:
-                    parsed_edid = parse_edid(edid)
-                    if (
-                        parsed_edid.get("monitor_name", parsed_edid.get("ascii"))
-                        == display_name
-                    ):
-                        # On Mac OS X, you need to specify a display name
-                        # because the order is unknown
-                        return parsed_edid
+        if not stdout:
+            return {}
+        for edid in [
+            binascii.unhexlify(edid_hex)
+            for edid_hex in re.findall(
+                r'"IODisplayEDID"\s*=\s*<([0-9A-Fa-f]*)>', stdout.decode()
+            )
+        ]:
+            if not edid or len(edid) < 128:
+                continue
+            parsed_edid = parse_edid(edid)
+            if (
+                parsed_edid.get("monitor_name", parsed_edid.get("ascii"))
+                == display_name
+            ):
+                # On Mac OS X, you need to specify a display name
+                # because the order is unknown
+                return parsed_edid
         return {}
     elif RDSMM:
         display = RDSMM.get_display(display_no)
@@ -262,6 +264,7 @@ def get_manufacturer_name(manufacturer_id):
         ]  # fallback gnome-desktop
         if sys.platform in ("darwin", "win32"):
             paths.append(os.path.join(config.pydir, "pnp.ids"))  # fallback
+            paths.append(os.path.join(config.pydir, "DisplayCAL", "pnp.ids"))  # fallback for tests
         for path in paths:
             if os.path.isfile(path):
                 try:

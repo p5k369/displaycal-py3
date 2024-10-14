@@ -1,4 +1,5 @@
 """Sample DisplayData class."""
+import sys
 from typing import Dict, List
 
 
@@ -56,7 +57,7 @@ class DisplayData:
         "green_y": 0.7197265625,
         "hash": "40cf706d53476076b828fb8a78af796d",
         "header": b"\x00\xff\xff\xff\xff\xff\xff\x00",
-        "manufacturer": "Dell, Inc.",
+        "manufacturer": "Dell Inc.",
         "manufacturer_id": "DEL",
         "max_h_size_cm": 55,
         "max_v_size_cm": 31,
@@ -72,9 +73,18 @@ class DisplayData:
         "year_of_manufacture": 2017,
     }
 
-    CFG_DATA = [
-        "Monitor 1, Output DP-2 @ 0, 0, 1280x1024",
-    ]
+    @classmethod
+    def CFG_DATA(self, name, fallback=True, raw=False, cfg=None):
+        return {
+            "3dlut.tab.enable": 0,
+            "3dlut.tab.enable.backup": 0,
+            "app.dpi": 72.0 if sys.platform == "darwin" else 96.0,
+            "argyll.dir": None,
+            "argyll.version": "0.0.0",
+            "calibration.use_video_lut.backup": 1,
+            "displays": ["Monitor 1, Output DP-2 @ 0, 0, 1280x1024",],
+            "display.number": 0,
+        }[name]
 
     values_to_smooth = [
         2.3293030318929384,

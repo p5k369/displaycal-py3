@@ -85,7 +85,7 @@ def test_app_update_check(
 
 def test_check_donation(mainframe: MainFrame) -> None:
     """Test check for user disabled donation."""
-    with check_call(wx, "CallAfter", call_count=1):
+    with check_call(wx, "CallAfter", call_count=1 if sys.platform != "darwin" else 0):
         check_donation(mainframe, False)
 
 

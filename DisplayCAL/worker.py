@@ -32,10 +32,6 @@ import traceback
 import urllib.request
 import urllib.parse
 import urllib.error
-import urllib.request
-import urllib.error
-import urllib.parse
-import urllib.parse
 import warnings
 import zipfile
 import zlib
@@ -1102,6 +1098,25 @@ def _applycal_bug_workaround(profile):
                     [i / entry_max for i in range(num_entries)], trc_tag[:]
                 )
                 trc_tag[:] = [interp(i / 255.0) for i in range(256)]
+
+
+def get_argyll_latest_version():
+    """Return the latest ArgyllCMS version from argyllcms.com.
+
+    Returns:
+        str: The latest version number. Returns
+    """
+    argyll_domain = config.defaults.get("argyll.domain", "")
+    try:
+        changelog = re.search(
+            r"(?<=Version ).{5}",
+            urllib.request.urlopen(f"{argyll_domain}/log.txt").read(150).decode("utf-8")
+        )
+    except urllib.error.URLError as e:
+        # no internet connection
+        # return the default version
+        return config.defaults.get("argyll.version")
+    return changelog.group()
 
 
 def get_argyll_version(name, silent=False, paths=None):
@@ -2417,10 +2432,7 @@ class Worker(WorkerBase):
                         dimensions_measureframe = config.get_measureframe_dimensions(
                             dimensions_measureframe, 10
                         )
-                args.append(
-                    ("-p" if self.argyll_version <= [1, 0, 4] else "-P")
-                    + dimensions_measureframe
-                )
+                args.append(f"-P{dimensions_measureframe}")
             farg = get_arg("-F", args, True)
             if (
                 config.get_display_name() == "Resolve" or non_argyll_prisma
@@ -13422,10 +13434,10 @@ usage: spotread [-options] [logfile]
                 args.append("-o")
             if getcfg("calibration.update") and not dry_run:
                 cal = getcfg("calibration.file", False)
-                calcopy = os.path.join(inoutfile + ".cal")
+                calcopy = os.path.join(f"{inoutfile}.cal")
                 filename, ext = os.path.splitext(cal)
                 ext = ".cal"
-                cal = filename + ext
+                cal = f"{filename}{ext}"
                 if ext.lower() == ".cal":
                     result = check_cal_isfile(cal)
                     if isinstance(result, Exception):
@@ -16339,7 +16351,6 @@ BEGIN_DATA
         hashes = None
         is_main_dl = (
             uri.startswith(f"https://{DOMAIN}/download/")
-            # or uri.startswith(f"https://www.argyllcms.com//Argyll")
         )
         if is_main_dl:
             # Always force connection to server even if local file exists for

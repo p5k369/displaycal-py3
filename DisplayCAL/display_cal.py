@@ -200,6 +200,7 @@ from DisplayCAL.worker import (
     UnloggedWarning,
     Warn,
     Worker,
+    check_argyll_bin,
     check_create_dir,
     check_file_isfile,
     check_set_argyll_bin,
@@ -207,19 +208,19 @@ from DisplayCAL.worker import (
     check_ti3_criteria1,
     check_ti3_criteria2,
     get_arg,
+    get_argyll_latest_version,
     get_argyll_util,
-    get_cfg_option_from_args,
-    get_options_from_cal,
     get_argyll_version,
+    get_cfg_option_from_args,
     get_current_profile_path,
+    get_options_from_cal,
     get_options_from_profile,
     get_options_from_ti3,
+    http_request,
     make_argyll_compatible_path,
     parse_argument_string,
     set_argyll_bin,
     show_result_dialog,
-    check_argyll_bin,
-    http_request,
     FilteredStream,
     _applycal_bug_workaround,
 )
@@ -529,8 +530,7 @@ def app_update_confirm(
     newversion = ".".join(str(n) for n in newversion_tuple)
     if argyll:
         newversion_desc = "ArgyllCMS"
-        changelog = re.search(r'(?<=Version ).{5}', urllib.request.urlopen('https://www.argyllcms.com/log.txt').read(150).decode('utf-8'))
-        newversion = changelog.group()
+        newversion = get_argyll_latest_version()
     else:
         newversion_desc = appname
     newversion_desc += f" {newversion}"
@@ -629,7 +629,8 @@ def app_update_confirm(
             domain = DOMAIN
             if argyll:
                 consumer = worker.process_argyll_download
-                domain = "www.argyllcms.com"  # force Argyll downloads
+                # force Argyll downloads
+                domain = config.defaults.get("argyll.domain").split("/")[-1]
                 dlname = "Argyll"
                 sep = "_V"
                 if sys.platform == "win32":
@@ -18806,7 +18807,7 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
                     self.aboutdialog.panel,
                     -1,
                     label="ArgyllCMS",
-                    URL="https://www.argyllcms.com/",
+                    URL=config.defaults.get("argyll.domain"),
                 ),
                 wx.StaticText(
                     self.aboutdialog.panel,

@@ -20,7 +20,7 @@ def test_default_values_1():
     assert config.pypath != ""
     assert config.isapp is False  #
     assert config.pyname != ""  # _jb_pytest_runner
-    assert config.pyext != ""  # .py
+    # assert config.pyext != ""  # .py  This is not valid when pytest runß directly
     # $HOME/Documents/development/displaycal/DisplayCAL
     assert config.pydir != ""
 
