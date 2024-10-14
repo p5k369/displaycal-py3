@@ -149,11 +149,7 @@ class GenTCPSockPatternGeneratorServer(object):
             except error:
                 host = gethostname()
             self.logfile.write(
-                "{} {}:{}\n".format(
-                    lang.getstr("connection.waiting"),
-                    host,
-                    self.port
-                )
+                "{} {}:{}\n".format(lang.getstr("connection.waiting"), host, self.port)
             )
         while self.listening:
             try:
@@ -305,9 +301,7 @@ class PrismaPatternGeneratorClient(GenHTTPPatternGeneratorClient):
                     if self.debug:
                         print(
                             "PrismaPatternGeneratorClient: Received "
-                            "{} from {}:{}: {}".format(
-                                cast, addr[0], addr[1], data
-                            )
+                            "{} from {}:{}: {}".format(cast, addr[0], addr[1], data)
                         )
                     if data.startswith(self.prod_oem):
                         name = data[8:32].rstrip(b"\0")
@@ -511,7 +505,7 @@ class ResolveLSPatternGeneratorServer(GenTCPSockPatternGeneratorServer):
             '<?xml version="1.0" encoding="UTF-8" ?><calibration><shapes>'
             '<rectangle><color red="{:d}" green="{:d}" blue="{:d}" />'
             '<geometry x="{:.4f}" y="{:.4f}" cx="{:.4f}" cy="{:.4f}" />'
-            '</rectangle>'
+            "</rectangle>"
             "</shapes></calibration>".format(*tuple(rgb + [x, y, w, h]))
         )
         self.conn.sendall(struct.pack(">I", len(xml)) + xml.encode("utf-8"))
@@ -541,9 +535,7 @@ class ResolveCMPatternGeneratorServer(GenTCPSockPatternGeneratorServer):
             '<color red="{:d}" green="{:d}" blue="{:d}" bits="{:d}"/>'
             '<background red="{:d}" green="{:d}" blue="{:d}" bits="{:d}"/>'
             '<geometry x="{:.4f}" y="{:.4f}" cx="{:.4f}" cy="{:.4f}"/>'
-            "</calibration>".format(
-                *tuple(rgb + [bits] + bgrgb + [bits, x, y, w, h])
-            )
+            "</calibration>".format(*tuple(rgb + [bits] + bgrgb + [bits, x, y, w, h]))
         )
         self.conn.sendall(struct.pack(">I", len(xml)) + xml.encode("utf-8"))
 
@@ -643,9 +635,7 @@ class WebWinHTTPPatternGeneratorServer(TCPServer, object):
             except error:
                 host = gethostname()
             self.logfile.write(
-                ("{} {}:{}\n".format(
-                    lang.getstr("webserver.waiting"), host, self.port)
-                )
+                ("{} {}:{}\n".format(lang.getstr("webserver.waiting"), host, self.port))
             )
         self.socket.settimeout(1)
         while self.listening:

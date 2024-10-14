@@ -7,6 +7,7 @@ import sys
 def test_default_values_1():
     """Test default values of module level variables."""
     from DisplayCAL import config
+
     config.initcfg()
 
     assert config.configparser.DEFAULTSECT == "Default"
@@ -20,7 +21,7 @@ def test_default_values_1():
     assert config.pypath != ""
     assert config.isapp is False  #
     assert config.pyname != ""  # _jb_pytest_runner
-    assert config.pyext != ""  # .py
+    # assert config.pyext != ""  # .py  This is not valid when pytest runß directly
     # $HOME/Documents/development/displaycal/DisplayCAL
     assert config.pydir != ""
 

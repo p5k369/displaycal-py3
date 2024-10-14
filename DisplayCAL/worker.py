@@ -32,10 +32,6 @@ import traceback
 import urllib.request
 import urllib.parse
 import urllib.error
-import urllib.request
-import urllib.error
-import urllib.parse
-import urllib.parse
 import warnings
 import zipfile
 import zlib
@@ -354,9 +350,7 @@ def check_create_dir(path):
         try:
             os.makedirs(path)
         except Exception as exception:
-            return Error(
-                f"{lang.getstr('error.dir_creation', path)}\n\n{exception}"
-            )
+            return Error(f"{lang.getstr('error.dir_creation', path)}\n\n{exception}")
     if not os.path.isdir(path):
         return Error(lang.getstr("error.dir_notdir", path))
     return True
@@ -682,7 +676,7 @@ def create_shaper_curves(
     B_Z = []
     XYZbp = None
     XYZwp = None
-    for (R, G, B) in RGB_XYZ:
+    for R, G, B in RGB_XYZ:
         X, Y, Z = RGB_XYZ[(R, G, B)]
         X, Y, Z = colormath.adapt(X, Y, Z, RGB_XYZ[(100, 100, 100)], cat=cat)
         if 100 > R > 0 and min(X, Y, Z) < 100.0 / 65535:
@@ -1102,6 +1096,27 @@ def _applycal_bug_workaround(profile):
                     [i / entry_max for i in range(num_entries)], trc_tag[:]
                 )
                 trc_tag[:] = [interp(i / 255.0) for i in range(256)]
+
+
+def get_argyll_latest_version():
+    """Return the latest ArgyllCMS version from argyllcms.com.
+
+    Returns:
+        str: The latest version number. Returns
+    """
+    argyll_domain = config.defaults.get("argyll.domain", "")
+    try:
+        changelog = re.search(
+            r"(?<=Version ).{5}",
+            urllib.request.urlopen(f"{argyll_domain}/log.txt")
+            .read(150)
+            .decode("utf-8"),
+        )
+    except urllib.error.URLError as e:
+        # no internet connection
+        # return the default version
+        return config.defaults.get("argyll.version")
+    return changelog.group()
 
 
 def get_argyll_version(name, silent=False, paths=None):
@@ -2417,10 +2432,7 @@ class Worker(WorkerBase):
                         dimensions_measureframe = config.get_measureframe_dimensions(
                             dimensions_measureframe, 10
                         )
-                args.append(
-                    ("-p" if self.argyll_version <= [1, 0, 4] else "-P")
-                    + dimensions_measureframe
-                )
+                args.append(f"-P{dimensions_measureframe}")
             farg = get_arg("-F", args, True)
             if (
                 config.get_display_name() == "Resolve" or non_argyll_prisma
@@ -6995,7 +7007,7 @@ BEGIN_DATA
                 if sys.platform == "win32":
                     # FIX: stdio cp1252 vs utf-8 (cp65001) issue under Windows 10/11+
                     # os.environ["PYTHONLEGACYWINDOWSSTDIO"] = "1"
-                    kwargs["codepage"] = windll.kernel32.GetACP() #1252  # 65001 if capture_output else 1252
+                    kwargs["codepage"] = windll.kernel32.GetACP()
                     # As Windows' console always hard wraps at the
                     # rightmost column, increase the buffer width
                     kwargs["columns"] = 160
@@ -12070,7 +12082,7 @@ usage: spotread [-options] [logfile]
 
                     if not bpc:
                         XYZbp = None
-                        for (R, G, B) in RGB_XYZ:
+                        for R, G, B in RGB_XYZ:
                             X, Y, Z = RGB_XYZ[(R, G, B)]
                             if R == G == B == 0:
                                 XYZbp = [v / 100 for v in (X, Y, Z)]
@@ -13422,10 +13434,10 @@ usage: spotread [-options] [logfile]
                 args.append("-o")
             if getcfg("calibration.update") and not dry_run:
                 cal = getcfg("calibration.file", False)
-                calcopy = os.path.join(inoutfile + ".cal")
+                calcopy = os.path.join(f"{inoutfile}.cal")
                 filename, ext = os.path.splitext(cal)
                 ext = ".cal"
-                cal = filename + ext
+                cal = f"{filename}{ext}"
                 if ext.lower() == ".cal":
                     result = check_cal_isfile(cal)
                     if isinstance(result, Exception):
@@ -16337,10 +16349,7 @@ BEGIN_DATA
         download_path = os.path.join(download_dir, filename)
         response = None
         hashes = None
-        is_main_dl = (
-            uri.startswith(f"https://{DOMAIN}/download/")
-            # or uri.startswith(f"https://www.argyllcms.com//Argyll")
-        )
+        is_main_dl = uri.startswith(f"https://{DOMAIN}/download/")
         if is_main_dl:
             # Always force connection to server even if local file exists for
             # displaycal.net/downloads/* and displaycal.net/Argyll/*

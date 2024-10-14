@@ -52,7 +52,6 @@ def get_valid_host(hostname=None):
 
 
 class LoggingHTTPRedirectHandler(urllib.request.HTTPRedirectHandler):
-
     """Like urllib2.HTTPRedirectHandler, but logs redirections"""
 
     # maximum number of redirections to any single URL
@@ -90,7 +89,6 @@ class LoggingHTTPRedirectHandler(urllib.request.HTTPRedirectHandler):
 
 
 class NoHTTPRedirectHandler(urllib.request.HTTPRedirectHandler):
-
     """Like urllib2.HTTPRedirectHandler, but does not allow redirections"""
 
     def http_error_302(self, req, fp, code, msg, headers):
@@ -148,7 +146,7 @@ class ScriptingClientSocket(socket.socket):
             self.recv_buffer += incoming
         end = self.recv_buffer.find(b"\4")
         single_response = self.recv_buffer[:end]
-        self.recv_buffer = self.recv_buffer[end + 1:]
+        self.recv_buffer = self.recv_buffer[end + 1 :]
         return single_response
 
     def send_command(self, command):

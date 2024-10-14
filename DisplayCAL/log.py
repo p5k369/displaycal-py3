@@ -180,7 +180,9 @@ class SafeLogger(SafePrinter):
         SafePrinter.__init__(self)
         self.log = log
         if print_ is None:
-            print_ = sys.stdout and hasattr(sys.stdout, "isatty") and sys.stdout.isatty()
+            print_ = (
+                sys.stdout and hasattr(sys.stdout, "isatty") and sys.stdout.isatty()
+            )
         self.print_ = print_
 
     def write(self, *args, **kwargs):

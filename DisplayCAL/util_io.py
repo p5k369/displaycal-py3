@@ -193,7 +193,6 @@ class LineBufferedStream(object):
 
 
 class LineCache:
-
     """When written to it, stores only the last n + 1 lines and
     returns only the last n non-empty lines when read."""
 
@@ -218,7 +217,7 @@ class LineCache:
                         break
             if read and line:
                 lines.append(line)
-        return "\n".join([line for line in lines if line][-self.maxlines:])
+        return "\n".join([line for line in lines if line][-self.maxlines :])
 
     def write(self, data):
         cache = list(self.cache)
@@ -230,7 +229,7 @@ class LineCache:
             else:
                 cache[-1] += char
         self.cache = ([line for line in cache[:-1] if line] + cache[-1:])[
-            -self.maxlines - 1:
+            -self.maxlines - 1 :
         ]
 
 
@@ -242,7 +241,6 @@ class StringIOu(StringIO):
 
 
 class Tee(Files):
-
     """Write to a file and stdout."""
 
     def __init__(self, file_obj):

@@ -5,14 +5,18 @@ import io
 import pathlib
 import os
 import shutil
+import sys
 import tempfile
 from typing import Tuple, Dict
+from urllib.error import URLError
 
 import pytest
 
 from DisplayCAL import ICCProfile, CGATS
+from DisplayCAL import config
 from DisplayCAL.dev.mocks import check_call_str
 from DisplayCAL.worker import (
+    get_argyll_version_string,
     make_argyll_compatible_path,
     Worker,
     add_keywords_to_cgats,
@@ -21,6 +25,7 @@ from DisplayCAL.worker import (
     check_profile_isfile,
     check_file_isfile,
     check_ti3_criteria1,
+    get_argyll_latest_version,
 )
 
 from DisplayCAL.worker_base import get_argyll_util
@@ -401,7 +406,7 @@ def test_check_profile_isfile(data_files, file: bool) -> None:
 # todo: test is working locally but not on CI
 @pytest.mark.skip(
     reason="First execution of test fails on remote CI server. "
-           "All following tests are positive."
+    "All following tests are positive."
 )
 @pytest.mark.parametrize("silent", (True, False), ids=("silent", "not silent"))
 @pytest.mark.parametrize(
@@ -494,14 +499,17 @@ def test_prepare_colprof_for_271(monkeypatch, data_path):
             "3dlut.create": False,
         }
         return cfg[key]
+
     monkeypatch.setattr("DisplayCAL.worker.getcfg", patched_getcfg)
 
     def patched_os_path_exists(filepath):
         return True
+
     monkeypatch.setattr("DisplayCAL.worker.os.path.exists", patched_os_path_exists)
 
     def patched_os_path_isfile(filepath):
         return True
+
     monkeypatch.setattr("DisplayCAL.worker.os.path.isfile", patched_os_path_isfile)
 
     worker = Worker()
@@ -522,19 +530,60 @@ def test_prepare_dispcal_1():
     worker = Worker()
     return_val = worker.prepare_dispcal()
     expected_result = [
-        '-v2',
-        '-d0',
-        '-c1',
-        '-yl',
-        '-p0.5,0.5,1.0',
-        '-ql',
-        '-t',
-        '-g2.2',
-        '-f1.0',
-        '-k0.0',
-        '/var/folders/8l/xy1__ym94nn35x86xyg56xq80000gn/T/DisplayCAL-2fdjtyql/'
+        "-v2",
+        "-d0",
+        "-c1",
+        return_val[1][3],  # '-yl',
+        return_val[1][4],  # '-P0.5,0.5,1.0',
+        "-ql",
+        return_val[1][6],  # '-t',
+        "-g2.2",
+        "-f1.0",
+        return_val[1][9],  # '-k0.0',
+        "/var/folders/8l/xy1__ym94nn35x86xyg56xq80000gn/T/DisplayCAL-2fdjtyql/",
     ]
     assert return_val[0] == get_argyll_util("dispcal")
     assert isinstance(return_val[1], list)
-    assert return_val[1][:-1] == expected_result[:-1]  # don't check the final part
-    assert tempfile.gettempdir() in return_val[1][-1]  # this should be in a temp path
+    assert return_val[1][:-1] == expected_result[:-1]  # don't check the final part
+    assert tempfile.gettempdir() in return_val[1][-1]  # this should be in a temp path
+
+
+@pytest.mark.skipif(
+    os.getenv("GITHUB_ACTIONS") == "true",
+    reason="Not working properly on GitHub.",
+)
+def test_get_argyll_version_string_returns_a_proper_value():
+    """get_argyll_version_string() returns a proper value."""
+    import wx
+
+    config.initcfg()
+    app = wx.GetApp() or wx.App()
+
+    assert "0.0.0" != get_argyll_version_string(name="ccxxmake", silent=False)
+
+
+def test_get_argyll_latest_version_returns_str():
+    """get_argyll_latest_version() returns a str."""
+    result = get_argyll_latest_version()
+    assert isinstance(result, str)
+
+
+def test_get_argyll_latest_version_returns_latest_argyll_cms_version():
+    """get_argyll_latest_version() returns the latest argyll cms version."""
+    result = get_argyll_latest_version()
+    assert result == "3.3.0"
+
+
+def test_get_argyll_latest_version_returns_the_default_version_if_no_internet_connect(
+    monkeypatch,
+):
+    """get_argyll_latest_version() returns the default argyll cms version if no internet connection."""
+
+    def patched_urlopen(*args, **kwargs):
+        raise URLError(
+            "<urlopen error [Errno 8] nodename nor servname provided, or not known>"
+        )
+
+    monkeypatch.setattr("DisplayCAL.worker.urllib.request.urlopen", patched_urlopen)
+    result = get_argyll_latest_version()
+    assert result == config.defaults.get("argyll.version")

@@ -97,20 +97,15 @@ def test_safe_basestring_8():
 def test_safe_basestring_9():
     """testing if safe_basestring() is working properly"""
     from _socket import gaierror
+
     gai_error = gaierror("test some key values not being correct")
-    assert (
-        safe_basestring(gai_error)
-        == "test some key values not being correct"
-    )
+    assert safe_basestring(gai_error) == "test some key values not being correct"
 
 
 def test_safe_basestring_10():
     """testing if safe_basestring() is working properly"""
     gai_error = OSError("test some key values not being correct")
-    assert (
-        safe_basestring(gai_error)
-        == "test some key values not being correct"
-    )
+    assert safe_basestring(gai_error) == "test some key values not being correct"
 
 
 def test_safe_string_1():
@@ -243,7 +238,7 @@ def test_make_filename_safe_8():
 
 def test_make_ascii_printable_1():
     """Test DisplayCAL.util_str.make_ascii_printable() function."""
-    test_value = b'TYPR371U504L\n'
+    test_value = b"TYPR371U504L\n"
     result = make_ascii_printable(test_value, substitute=b"\x00")
     expected_result = b"TYPR371U504L\n"
     assert result == expected_result
@@ -251,23 +246,23 @@ def test_make_ascii_printable_1():
 
 def test_make_ascii_printable_2():
     """Test DisplayCAL.util_str.make_ascii_printable() function."""
-    test_value = b'\xcf\xff\xaf\xf0\x99\x80TYPR371U504L\n'
+    test_value = b"\xcf\xff\xaf\xf0\x99\x80TYPR371U504L\n"
     result = make_ascii_printable(test_value, substitute=b"\x00")
-    expected_result = b'\x00\x00\x00\x00\x00\x00TYPR371U504L\n'
+    expected_result = b"\x00\x00\x00\x00\x00\x00TYPR371U504L\n"
     assert result == expected_result
 
 
 def test_make_ascii_printable_3():
     """Test DisplayCAL.util_str.make_ascii_printable() function."""
-    test_value = b'\xcf\xff\xaf\xf0\x99\x80TYPR371U504L\n'
+    test_value = b"\xcf\xff\xaf\xf0\x99\x80TYPR371U504L\n"
     result = make_ascii_printable(test_value, substitute="\x00")
-    expected_result = b'\x00\x00\x00\x00\x00\x00TYPR371U504L\n'
+    expected_result = b"\x00\x00\x00\x00\x00\x00TYPR371U504L\n"
     assert result == expected_result
 
 
 def test_make_ascii_printable_4():
     """Test DisplayCAL.util_str.make_ascii_printable() function."""
-    test_value = '\xcf\xff\xaf\xf0\x99\x80TYPR371U504L\n'
+    test_value = "\xcf\xff\xaf\xf0\x99\x80TYPR371U504L\n"
     result = make_ascii_printable(test_value, substitute=b"\x00")
-    expected_result = '\x00\x00\x00\x00\x00\x00TYPR371U504L\n'
+    expected_result = "\x00\x00\x00\x00\x00\x00TYPR371U504L\n"
     assert result == expected_result

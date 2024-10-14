@@ -313,7 +313,7 @@ def create_app_symlinks(dist_dir, scripts):
                         # py2app
                         with open(src, "r") as main_in:
                             py = main_in.read()
-                        py = py.replace("main()", "main(%r)" % script[len(name) + 1:])
+                        py = py.replace("main()", "main(%r)" % script[len(name) + 1 :])
                         with open(tgt, "wb") as main_out:
                             main_out.write(py.encode())
                         continue
@@ -345,9 +345,7 @@ def create_app_symlinks(dist_dir, scripts):
                     infoxml,
                 )
                 # CFBundleIdentifier
-                infoxml = infoxml.replace(
-                    f".{name}</string>", f".{script}</string>"
-                )
+                infoxml = infoxml.replace(f".{name}</string>", f".{script}</string>")
                 # CFBundleIconFile
                 infoxml = infoxml.replace(
                     f"{name}.icns</string>", f"{script}.icns</string>"
@@ -386,7 +384,7 @@ def get_data(tgt_dir, key, pkgname=None, subkey=None, excludes=None):
     src_dir = source_dir
     if pkgname:
         files = files[pkgname]
-        # modifying the src_dir is not working with py2app, so disabling it.
+        # modifying the src_dir is not working with py2app, so disabling it.
         # src_dir = os.path.join(src_dir, pkgname)
         if subkey:
             if subkey in files:
@@ -396,11 +394,18 @@ def get_data(tgt_dir, key, pkgname=None, subkey=None, excludes=None):
     data = []
     for pth in files:
         if not [exclude for exclude in excludes or [] if fnmatch(pth, exclude)]:
-            normalized_path = os.path.normpath(os.path.join(tgt_dir, os.path.dirname(pth)))
-            safe_path = [relpath(p, src_dir) for p in safe_glob(os.path.join(src_dir, pth))]
+            normalized_path = os.path.normpath(
+                os.path.join(tgt_dir, os.path.dirname(pth))
+            )
+            safe_path = [
+                relpath(p, src_dir) for p in safe_glob(os.path.join(src_dir, pth))
+            ]
             if pkgname:
                 # try looking for the "{src_dir}/{pkgname}/{pth}" too
-                safe_path += [relpath(p, src_dir) for p in safe_glob(os.path.join(src_dir, pkgname, pth))]
+                safe_path += [
+                    relpath(p, src_dir)
+                    for p in safe_glob(os.path.join(src_dir, pkgname, pth))
+                ]
             data.append((normalized_path, safe_path))
     return data
 
@@ -426,7 +431,7 @@ def get_scripts(excludes=None):
         script = os.path.basename(script)
         if script == appname.lower() + "-apply-profiles-launcher":
             continue
-        desktopfile = os.path.join(pydir, "..", "misc",  f"{script}.desktop")
+        desktopfile = os.path.join(pydir, "..", "misc", f"{script}.desktop")
         if os.path.isfile(desktopfile):
             cfg = ConfigParser()
             cfg.read(desktopfile)
@@ -527,7 +532,7 @@ def setup():
 
     if do_uninstall:
         i = sys.argv.index("uninstall")
-        sys.argv = sys.argv[:i] + ["install"] + sys.argv[i + 1:]
+        sys.argv = sys.argv[:i] + ["install"] + sys.argv[i + 1 :]
         install.create_home_path = lambda self: None
 
     if (
@@ -535,22 +540,22 @@ def setup():
         in sys.argv[1:]
     ):
         i = sys.argv.index("--skip-instrument-configuration-files")
-        sys.argv = sys.argv[:i] + sys.argv[i + 1:]
+        sys.argv = sys.argv[:i] + sys.argv[i + 1 :]
 
     if not is_rpm_build:
         skip_instrument_conf_files = True
 
     if skip_postinstall:
         i = sys.argv.index("--skip-postinstall")
-        sys.argv = sys.argv[:i] + sys.argv[i + 1:]
+        sys.argv = sys.argv[:i] + sys.argv[i + 1 :]
 
     if "--use-distutils" in sys.argv[1:]:
         i = sys.argv.index("--use-distutils")
-        sys.argv = sys.argv[:i] + sys.argv[i + 1:]
+        sys.argv = sys.argv[:i] + sys.argv[i + 1 :]
 
     if "--use-setuptools" in sys.argv[1:]:
         i = sys.argv.index("--use-setuptools")
-        sys.argv = sys.argv[:i] + sys.argv[i + 1:]
+        sys.argv = sys.argv[:i] + sys.argv[i + 1 :]
 
     argv = list(sys.argv[1:])
     for i, arg in enumerate(reversed(argv)):
@@ -571,13 +576,13 @@ def setup():
             arg = arg.split("=")
             if arg[0] == "--debug":
                 debug = 1 if len(arg) == 1 else int(arg[1])
-                sys.argv = sys.argv[:n] + sys.argv[n + 1:]
+                sys.argv = sys.argv[:n] + sys.argv[n + 1 :]
             elif len(arg) == 2:
                 if arg[0] == "--dist-dir":
                     dist_dir = arg[1]
                 elif arg[0] == "--doc-layout":
                     doc_layout = arg[1]
-                    sys.argv = sys.argv[:n] + sys.argv[n + 1:]
+                    sys.argv = sys.argv[:n] + sys.argv[n + 1 :]
                 elif arg[0] == "--install-data":
                     install_data = arg[1]
                 elif arg[0] == "--prefix":
@@ -656,15 +661,7 @@ def setup():
             )
         else:
             data_files.append(
-                (
-                    doc,
-                    [
-                        relpath(
-                            os.path.join(pydir, "..", "LICENSE.txt"),
-                            source_dir
-                        )
-                    ]
-                )
+                (doc, [relpath(os.path.join(pydir, "..", "LICENSE.txt"), source_dir)])
             )
 
     # metainfo / appdata.xml
@@ -1064,7 +1061,7 @@ setup(ext_modules=[Extension("{name}.lib{bits}.RealDisplaySizeMM", sources={sour
                     (
                         ""
                         if script == name.lower()
-                        else script[len(name):].lower().replace("-", "_")
+                        else script[len(name) :].lower().replace("-", "_")
                     ),
                 )
                 for script, desc in scripts
@@ -1434,8 +1431,12 @@ setup(ext_modules=[Extension("{name}.lib{bits}.RealDisplaySizeMM", sources={sour
                     # setuptools
                     paths += (
                         safe_glob(path)
-                        + safe_glob(f"{path}-{version}-py{sys.version_info[0]}.{sys.version_info[1]}*.egg")
-                        + safe_glob(f"{path}-{version}-py{sys.version_info[0]}.{sys.version_info[1]}*.egg-info")
+                        + safe_glob(
+                            f"{path}-{version}-py{sys.version_info[0]}.{sys.version_info[1]}*.egg"
+                        )
+                        + safe_glob(
+                            f"{path}-{version}-py{sys.version_info[0]}.{sys.version_info[1]}*.egg-info"
+                        )
                     )
 
             if os.path.isabs(data) and data not in paths:
@@ -1641,7 +1642,7 @@ setup(ext_modules=[Extension("{name}.lib{bits}.RealDisplaySizeMM", sources={sour
 
         if bdist_bbfreeze:
             i = sys.argv.index("bdist_bbfreeze")
-            if "-d" not in sys.argv[i + 1:] and "--dist-dir" not in sys.argv[i + 1:]:
+            if "-d" not in sys.argv[i + 1 :] and "--dist-dir" not in sys.argv[i + 1 :]:
                 dist_dir = os.path.join(
                     pydir,
                     "..",
@@ -1683,7 +1684,9 @@ setup(ext_modules=[Extension("{name}.lib{bits}.RealDisplaySizeMM", sources={sour
                     dist_dir, f"python{sys.version_info[0]}{sys.version_info[1]}.dll"
                 ),
                 os.path.join(
-                    dist_dir, "lib", f"python{sys.version_info[0]}{sys.version_info[1]}.dll"
+                    dist_dir,
+                    "lib",
+                    f"python{sys.version_info[0]}{sys.version_info[1]}.dll",
                 ),
             )
 

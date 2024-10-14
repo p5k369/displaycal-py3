@@ -38,7 +38,16 @@ def _get_console_width():
 
 class SafePrinter(object):
 
-    def __init__(self, pad=False, padchar=" ", sep=" ", end="\n", file_=sys.stdout, fn=None, encoding=None):
+    def __init__(
+        self,
+        pad=False,
+        padchar=" ",
+        sep=" ",
+        end="\n",
+        file_=sys.stdout,
+        fn=None,
+        encoding=None,
+    ):
         """Write safely, avoiding any UnicodeDe-/EncodingErrors on strings and
         converting all other objects to safe string representations.
 

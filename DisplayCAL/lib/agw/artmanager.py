@@ -594,7 +594,6 @@ class RendererMSOffice2007(RendererBase):
 
 
 class ArtManager(wx.EvtHandler):
-
     """This class provides various art utilities, such as creating shadow, providing
     lighter / darker colours for a given colour, etc...
     """

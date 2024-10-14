@@ -76,6 +76,7 @@ from DisplayCAL.wxaddons import (
     EVT_BETTERTIMER,
 )
 from DisplayCAL.wexpect import split_command_line
+
 # from wexpect import split_command_line
 from DisplayCAL.wxfixes import (
     GenBitmapButton,
@@ -556,7 +557,9 @@ class AuiBetterTabArt(AuiDefaultTabArt):
             dc.DrawBitmap(
                 pagebitmap,
                 bitmap_offset,
-                drawn_tab_yoff + int(drawn_tab_height / 2) - int(pagebitmap.GetHeight() / 2),
+                drawn_tab_yoff
+                + int(drawn_tab_height / 2)
+                - int(pagebitmap.GetHeight() / 2),
                 True,
             )
 
@@ -744,7 +747,6 @@ class AutocompleteComboBox(wx.ComboBox):
 
 
 class BaseApp(wx.App):
-
     """Application base class implementing common functionality."""
 
     _exithandlers = []
@@ -1660,9 +1662,12 @@ class BaseFrame(wx.Frame):
                                     demjson.encode(label),
                                     menuitem.Id,
                                     demjson.encode(menuitem.Label),
-                                    "enabled"
-                                    if menubar.IsEnabledTop(i) and menuitem.IsEnabled()
-                                    else "disabled",
+                                    (
+                                        "enabled"
+                                        if menubar.IsEnabledTop(i)
+                                        and menuitem.IsEnabled()
+                                        else "disabled"
+                                    ),
                                     " checkable" if menuitem.IsCheckable() else "",
                                     " checked" if menuitem.IsChecked() else "",
                                 )
@@ -2477,7 +2482,6 @@ class BaseFrame(wx.Frame):
 
 
 class BaseInteractiveDialog(wx.Dialog):
-
     """Base class for informational and confirmation dialogs"""
 
     def __init__(
@@ -2862,7 +2866,6 @@ class HtmlWindow(wx.html.HtmlWindow):
 
 
 class BitmapBackgroundBitmapButton(wx.BitmapButton):
-
     """A BitmapButton that will use its parent bitmap background.
 
     The parent needs to have a GetBitmap() method.
@@ -3010,7 +3013,6 @@ class BitmapBackgroundPanel(wx.PyPanel):
 
 
 class BitmapBackgroundPanelText(BitmapBackgroundPanel):
-
     """A panel with a background bitmap and text label"""
 
     def __init__(self, *args, **kwargs):
@@ -3084,8 +3086,8 @@ class BitmapBackgroundPanelText(BitmapBackgroundPanel):
             dc.SetTextForeground(color)
             dc.DrawText(line, int(x), int(y))
 
-class BitmapBackgroundPanelTextGamut(BitmapBackgroundPanelText):
 
+class BitmapBackgroundPanelTextGamut(BitmapBackgroundPanelText):
     """A panel with a background bitmap and text label to display gamut"""
 
     def __init__(self, *args, **kwargs):
@@ -3100,8 +3102,8 @@ class BitmapBackgroundPanelTextGamut(BitmapBackgroundPanelText):
         self.use_gcdc = False
         self._label = ""
 
-class ConfirmDialog(BaseInteractiveDialog):
 
+class ConfirmDialog(BaseInteractiveDialog):
     """Confirmation dialog with OK and Cancel buttons"""
 
     def __init__(
@@ -3390,7 +3392,6 @@ _DirDialog = wx.DirDialog
 
 
 class DirDialog(PathDialog):
-
     """wx.DirDialog cannot be interacted with programmatically after
     ShowModal(), a functionality we need for scripting."""
 
@@ -3403,7 +3404,6 @@ _FileDialog = wx.FileDialog
 
 
 class FileDialog(PathDialog):
-
     """wx.FileDialog cannot be interacted with programmatically after
     ShowModal(), a functionality we need for scripting."""
 
@@ -4009,11 +4009,11 @@ class BorderGradientButton(GradientButton):
             elif capture != self and self._hasFocus:
                 bitmap = self._bitmapfocus
             elif self._mouseAction == HOVER and not get_dialogs(True):
-                bitmap = self._bitmapfocus # self._bitmaphover
+                bitmap = self._bitmapfocus  # self._bitmaphover
             else:
-                bitmap = self._bitmapfocus # self._bitmap
+                bitmap = self._bitmapfocus  # self._bitmap
         else:
-            bitmap = self._bitmapfocus # self._bitmapdisabled
+            bitmap = self._bitmapfocus  # self._bitmapdisabled
         if bitmap:
             pos_y = (height - bh) / 2 + shadowOffset
             gc.DrawBitmap(bitmap, pos_x, pos_y, bw, bh)  # draw bitmap if available
@@ -4524,7 +4524,6 @@ class CustomGrid(wx.grid.Grid):
 
 
 class CustomCheckBox(wx.Panel):
-
     """A custom checkbox where the label is independent from the checkbox itself.
 
     Works around wxMac not taking into account text (foreground) color on
@@ -5157,11 +5156,9 @@ class CustomRowLabelRenderer(object):
 
 
 class HStretchStaticBitmap(wx.StaticBitmap):
-
     """A StaticBitmap that will automatically stretch horizontally.
 
     To be used with sizers.
-
     """
 
     def __init__(self, *args, **kwargs):
@@ -5522,7 +5519,6 @@ class BetterStaticFancyTextBase(object):
 
 
 class BetterStaticFancyText(BetterStaticFancyTextBase, GenStaticBitmap):
-
     """Based on wx.lib.fancytext functionality.
 
     Renders crisp on 'Retina' displays under OS X and in high DPI mode
@@ -5669,7 +5665,6 @@ if wx.Platform == "__WXGTK__" and hasattr(wx.StaticText, "SetLabelMarkup"):
 
 
 class InfoDialog(BaseInteractiveDialog):
-
     """Informational dialog with OK button"""
 
     def __init__(
@@ -5707,7 +5702,6 @@ class InfoDialog(BaseInteractiveDialog):
 
 
 class InvincibleFrame(BaseFrame):
-
     """A frame that won't be destroyed when closed"""
 
     def __init__(
@@ -5728,7 +5722,6 @@ class InvincibleFrame(BaseFrame):
 
 
 class LogWindow(InvincibleFrame):
-
     """A log-type window with Clear and Save As buttons"""
 
     def __init__(
@@ -6065,7 +6058,6 @@ class LogWindow(InvincibleFrame):
 
 
 class ProgressDialog(wx.Dialog):
-
     """A progress dialog."""
 
     bitmaps = {}
@@ -6821,7 +6813,6 @@ class SimpleBook(labelbook.FlatBookBase):
 
 
 class SimpleTerminal(InvincibleFrame):
-
     """A simple terminal-like window."""
 
     def __init__(
@@ -7249,7 +7240,6 @@ class TabButton(PlateButton):
 
 
 class TaskBarNotification(wx.Frame):
-
     """A popup window in a visual style similar to Win10 'toast' notifications.
 
     It will be shown next to the task bar tray, which makes it a possible
@@ -7465,7 +7455,7 @@ class TooltipWindow(InvincibleFrame):
                 cls = BetterStaticFancyText
             else:
                 cls = wx.StaticText
-            # We need to initialize the label with something,
+            # We need to initialize the label with something,
             # so initialize it with with "dummy text",
             # and it will be replaced later on...
             col = cls(self.panel, -1, "dummy text")
@@ -7539,7 +7529,9 @@ class TwoWaySplitter(FourWaySplitter):
 
         if self._expanded < 0:
             totw = int(width - bar_size - 2 * border)
-            self._splitx = int(max((self._fhor * totw) / 10000, self._minimum_pane_size))
+            self._splitx = int(
+                max((self._fhor * totw) / 10000, self._minimum_pane_size)
+            )
             self._splity = int(height)
             rightw = max(totw - self._splitx, 0)
             if win0:
@@ -7555,7 +7547,12 @@ class TwoWaySplitter(FourWaySplitter):
             if self._expanded < len(self._windows):
                 for ii, win in enumerate(self._windows):
                     if ii == self._expanded:
-                        win.SetSize((int(width - bar_size - 2 * border), int(height - 2 * border)))
+                        win.SetSize(
+                            (
+                                int(width - bar_size - 2 * border),
+                                int(height - 2 * border),
+                            )
+                        )
                         win.Show()
                     else:
                         win.Hide()
@@ -7761,7 +7758,9 @@ class TwoWaySplitter(FourWaySplitter):
                 self.MoveSplit(self._splitx, pt.y - self._offy)
 
             # Send a changing event
-            if not self.DoSendChangingEvent(wx.Point(int(self._splitx), int(self._splity))):
+            if not self.DoSendChangingEvent(
+                wx.Point(int(self._splitx), int(self._splity))
+            ):
                 self._splitx = oldsplitx
                 self._splity = oldsplity
                 return

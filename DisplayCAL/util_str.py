@@ -226,7 +226,6 @@ subst.update(
 
 
 class StrList(list):
-
     """It's a list. It's a string. It's a list of strings that behaves like a
     string! And like a list."""
 
@@ -252,7 +251,7 @@ def asciize(obj):
     """
     chars = b""
     if isinstance(obj, Exception):
-        for char in obj.object[obj.start: obj.end]:
+        for char in obj.object[obj.start : obj.end]:
             chars += subst.get(char, normalencode(char).strip() or b"?")
         return chars, obj.end
     else:
@@ -270,7 +269,7 @@ def safe_asciize(obj) -> bytes:
     """
     chars = b""
     if isinstance(obj, Exception):
-        for char in obj.object[obj.start: obj.end]:
+        for char in obj.object[obj.start : obj.end]:
             if char in safesubst:
                 subst_char = safesubst[char]
             else:
@@ -297,7 +296,7 @@ def escape(obj):
     """
     chars = b""
     if isinstance(obj, Exception):
-        for char in obj.object[obj.start: obj.end]:
+        for char in obj.object[obj.start : obj.end]:
             chars += subst.get(char, "\\u%s" % hex(ord(char))[2:].rjust(4, "0"))
         return chars, obj.end
     else:
@@ -331,7 +330,7 @@ def make_ascii_printable(text, substitute=b""):
             substitute = substitute.decode("utf-8")
 
     for i in range(len(text)):
-        char = text[i: i + 1]
+        char = text[i : i + 1]
         if char in temp_ascii_printable:
             buffer.append(char)
         else:
@@ -347,9 +346,9 @@ def make_filename_safe(unistr, encoding=fs_enc, substitute="_", concat=True):
     substitution character.
     """
     if not isinstance(unistr, (str, bytes)):
-        raise TypeError("unistr should be a str or bytes, not {}".format(
-            unistr.__class__.__name__
-        ))
+        raise TypeError(
+            "unistr should be a str or bytes, not {}".format(unistr.__class__.__name__)
+        )
     # Turn characters that are invalid in the filesystem encoding into ASCII
     # substitution character '?'
     # NOTE that under Windows, encoding with the filesystem encoding may
@@ -379,9 +378,9 @@ def make_filename_safe(unistr, encoding=fs_enc, substitute="_", concat=True):
 
     # Replace substitution character '?' with ASCII equivalent of original char
     for i in range(len(unidec)):
-        c = unidec[i: i + 1]
+        c = unidec[i : i + 1]
         if c == question_mark:
-            c = safe_asciize(unistr[i: i + 1])  # this will always be bytes
+            c = safe_asciize(unistr[i : i + 1])  # this will always be bytes
             if isinstance(unistr, str):
                 c = c.decode(encoding)
         uniout += c
@@ -459,7 +458,7 @@ def ellipsis_(text, maxlen=64, pos="r"):
     if pos == "r":
         return text[: maxlen - 1] + ellipsis_char
     elif pos == "m":
-        return text[: int(maxlen / 2)] + ellipsis_char + text[int(-maxlen / 2 + 1):]
+        return text[: int(maxlen / 2)] + ellipsis_char + text[int(-maxlen / 2 + 1) :]
 
 
 def hexunescape(match):

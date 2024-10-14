@@ -968,7 +968,10 @@ class FloatSpin(wx.PyControl):
         max_val = self._max if self._max is not None else self._spinbutton.Max
         # Scale the value to the spinbutton range
         spinvalue = int(
-            round((float(value - min_val) / float(max_val - min_val)) * self._spinbutton.Max)
+            round(
+                (float(value - min_val) / float(max_val - min_val))
+                * self._spinbutton.Max
+            )
         )
         # Setting the spin button value causes a EVT_SPIN event to be generated
         # under GTK, which we need to ignore
@@ -1087,7 +1090,7 @@ class FloatSpin(wx.PyControl):
             if incr.find(".") < 0:
                 digits = 0
             else:
-                digits = len(incr[incr.find(".") + 1:])
+                digits = len(incr[incr.find(".") + 1 :])
 
         self._digits = digits
 
@@ -1811,6 +1814,7 @@ def _mkFP(n, p, FixedPoint=FixedPoint):
 # y must be > 0
 # XXX which rounding modes are useful?
 
+
 def cmp(a, b):
     """Reimplemented Python 2.x cmp function
 
@@ -1932,7 +1936,7 @@ def focus_next_keyboard_focusable_control(control):
             children = list(reversed(children))
         for i, child in enumerate(children):
             if child is control:
-                for next in children[i + 1:] + children[:i]:
+                for next in children[i + 1 :] + children[:i]:
                     if next is not child.Parent:
                         next.SetFocus()
                         break

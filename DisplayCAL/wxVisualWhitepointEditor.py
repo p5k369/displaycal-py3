@@ -327,7 +327,6 @@ class AuiDarkDockArt(aui.dockart.AuiDefaultDockArt):
 
 
 class AuiManager_LRDocking(aui.AuiManager):
-
     """AuiManager with only left/right docking.
 
     Also, it is not necessary to hover the drop guide, a drop hint will show
@@ -1550,7 +1549,6 @@ class NumSpin(wx_Panel):
 
 
 class ProfileManager(object):
-
     """Manages profiles associated with the display that a window is on.
 
     Clears calibration on the display we're on, and restores it when moved

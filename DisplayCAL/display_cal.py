@@ -113,6 +113,7 @@ if sys.platform == "win32":
 elif sys.platform == "darwin":
     from DisplayCAL import util_mac
 from DisplayCAL import wexpect
+
 # import wexpect
 from DisplayCAL.argyll_cgats import (
     cal_to_fake_profile,
@@ -200,6 +201,7 @@ from DisplayCAL.worker import (
     UnloggedWarning,
     Warn,
     Worker,
+    check_argyll_bin,
     check_create_dir,
     check_file_isfile,
     check_set_argyll_bin,
@@ -207,19 +209,19 @@ from DisplayCAL.worker import (
     check_ti3_criteria1,
     check_ti3_criteria2,
     get_arg,
+    get_argyll_latest_version,
     get_argyll_util,
-    get_cfg_option_from_args,
-    get_options_from_cal,
     get_argyll_version,
+    get_cfg_option_from_args,
     get_current_profile_path,
+    get_options_from_cal,
     get_options_from_profile,
     get_options_from_ti3,
+    http_request,
     make_argyll_compatible_path,
     parse_argument_string,
     set_argyll_bin,
     show_result_dialog,
-    check_argyll_bin,
-    http_request,
     FilteredStream,
     _applycal_bug_workaround,
 )
@@ -529,12 +531,7 @@ def app_update_confirm(
     newversion = ".".join(str(n) for n in newversion_tuple)
     if argyll:
         newversion_desc = "ArgyllCMS"
-        # TODO: I hate this, but this is the easiest way to fix
-        #       https://github.com/eoyilmaz/displaycal-py3/issues/291
-        #       we don't have access to displaycal.net to update the ArgylCMS
-        #       version. So, this mechanism should be updated to use some
-        #       other way of getting newer app versions...
-        newversion = "3.3.0"
+        newversion = get_argyll_latest_version()
     else:
         newversion_desc = appname
     newversion_desc += f" {newversion}"
@@ -633,7 +630,8 @@ def app_update_confirm(
             domain = DOMAIN
             if argyll:
                 consumer = worker.process_argyll_download
-                domain = "www.argyllcms.com"  # force Argyll downloads
+                # force Argyll downloads
+                domain = config.defaults.get("argyll.domain").split("/")[-1]
                 dlname = "Argyll"
                 sep = "_V"
                 if sys.platform == "win32":
@@ -678,9 +676,7 @@ def app_update_confirm(
                 consumer,
                 worker.download,
                 ckwargs={"exit": dlname == appname},
-                wargs=(
-                    f"https://{domain}/{folder}/{dlname}{sep}{newversion}{suffix}",
-                ),
+                wargs=(f"https://{domain}/{folder}/{dlname}{sep}{newversion}{suffix}",),
                 progress_msg=lang.getstr("downloading"),
                 fancy=False,
             )
@@ -949,23 +945,29 @@ def colorimeter_correction_web_check_choose(resp, parent=None):
         dlg_list_ctrl.SetStringItem(
             index,
             int(col),
-            fit_method or lang.getstr("unknown")
-            if ccxx_type == "CCMX"
-            else lang.getstr("not_applicable"),
+            (
+                fit_method or lang.getstr("unknown")
+                if ccxx_type == "CCMX"
+                else lang.getstr("not_applicable")
+            ),
         )
         dlg_list_ctrl.SetStringItem(
             index,
             int(col),
-            str(ccxx.queryv1("FIT_AVG_DE00") or lang.getstr("unknown"))
-            if ccxx_type == "CCMX"
-            else lang.getstr("not_applicable"),
+            (
+                str(ccxx.queryv1("FIT_AVG_DE00") or lang.getstr("unknown"))
+                if ccxx_type == "CCMX"
+                else lang.getstr("not_applicable")
+            ),
         )
         dlg_list_ctrl.SetStringItem(
             index,
             int(col),
-            str(ccxx.queryv1("FIT_MAX_DE00") or lang.getstr("unknown"))
-            if ccxx_type == "CCMX"
-            else lang.getstr("not_applicable"),
+            (
+                str(ccxx.queryv1("FIT_MAX_DE00") or lang.getstr("unknown"))
+                if ccxx_type == "CCMX"
+                else lang.getstr("not_applicable")
+            ),
         )
         dlg_list_ctrl.SetStringItem(index, int(col), created or lang.getstr("unknown"))
 
@@ -1238,7 +1240,6 @@ class Dummy(object):
 
 
 class IncrementingInt(object):
-
     """A integer that increments by `step` each time it is used"""
 
     def __init__(self, start=0, stop=None, step=1):
@@ -1254,7 +1255,6 @@ class IncrementingInt(object):
 
 
 class ExtraArgsFrame(BaseFrame):
-
     """Extra commandline arguments window."""
 
     def __init__(self, parent):
@@ -1347,7 +1347,6 @@ class ExtraArgsFrame(BaseFrame):
 
 
 class GamapFrame(BaseFrame):
-
     """Gamut mapping options window."""
 
     def __init__(self, parent):
@@ -2634,9 +2633,8 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
             self.profile_types.insert(
                 profile_types_index, lang.getstr("profile.type.lut_matrix.xyz")
             )
-            self.profile_types_ab[
-                profile_types_index
-            ] = "X"  # XYZ LUT + accurate matrix
+            # XYZ LUT + accurate matrix
+            self.profile_types_ab[profile_types_index] = "X"
             profile_types_index += 1
         if ([1, 1, 0] < self.worker.argyll_version[0:3] < [2, 0, 2]) or (
             self.worker.argyll_version[0:3] == [1, 1, 0]
@@ -2650,9 +2648,8 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
                 profile_types_index,
                 lang.getstr("profile.type.lut_rg_swapped_matrix.xyz"),
             )
-            self.profile_types_ab[
-                profile_types_index
-            ] = "x"  # XYZ LUT + dummy matrix (R <-> G swapped)
+            # XYZ LUT + dummy matrix (R <-> G swapped)
+            self.profile_types_ab[profile_types_index] = "x"
             profile_types_index += 1
         else:
             self.profile_types.insert(
@@ -2747,9 +2744,11 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
         if sys.platform != "darwin" or wx.VERSION >= (2, 9):
             file_.AppendSeparator()
         self.menuitem_prefs = file_.Append(
-            -1
-            if wx.VERSION < (2, 9) or sys.platform != "darwin"
-            else wx.ID_PREFERENCES,
+            (
+                -1
+                if wx.VERSION < (2, 9) or sys.platform != "darwin"
+                else wx.ID_PREFERENCES
+            ),
             "&" + "menuitem.set_argyll_bin",
         )
         self.Bind(wx.EVT_MENU, self.set_argyll_bin_handler, self.menuitem_prefs)
@@ -4840,7 +4839,11 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
                 ccmx_desc = self.ccmx_cached_descriptors[ccmx[1]]
                 items[1] += " (%s: %s)" % (
                     types.get(os.path.splitext(ccmx[1])[1].lower()[1:]),
-                    ccmx_desc if isinstance(ccmx_desc, str) else ccmx_desc.decode("utf-8"),
+                    (
+                        ccmx_desc
+                        if isinstance(ccmx_desc, str)
+                        else ccmx_desc.decode("utf-8")
+                    ),
                 )
             else:
                 items[1] += " (%s)" % lang.getstr("colorimeter_correction.file.none")
@@ -5914,9 +5917,11 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
 
     def calibrate_instrument_handler(self, event):
         self.worker.start(
-            lambda result: show_result_dialog(result, self)
-            if isinstance(result, Exception)
-            else None,
+            lambda result: (
+                show_result_dialog(result, self)
+                if isinstance(result, Exception)
+                else None
+            ),
             self.worker.calibrate_instrument_producer,
             fancy=False,
         )
@@ -7624,7 +7629,7 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
         InfoDialog(
             getattr(self, "modaldlg", self),
             msg="icc.opensuse.org is not working anymore\n"
-                "This functionality is temporarily disabled.",
+            "This functionality is temporarily disabled.",
             ok=lang.getstr("ok"),
             bitmap=geticon(32, "dialog-error"),
         )
@@ -7972,9 +7977,9 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
         metadata["CONNECTION_type"] = connections[dlg.connection_ctrl.GetSelection()]
         for ctrl in display_settings_ctrls:
             if isinstance(ctrl, wx.TextCtrl) and ctrl.GetValue().strip():
-                metadata[
-                    "OSD_settings_%s" % re.sub(r"[ .]", "_", ctrl.Name)
-                ] = ctrl.GetValue().strip()
+                metadata["OSD_settings_%s" % re.sub(r"[ .]", "_", ctrl.Name)] = (
+                    ctrl.GetValue().strip()
+                )
             if "OSD_" not in prefixes:
                 prefixes.append("OSD_")
         # Set meta prefix
@@ -8175,9 +8180,11 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
         print("-" * 80)
         print(lang.getstr(title))
         self.worker.start(
-            lambda result: show_result_dialog(result, self)
-            if isinstance(result, Exception)
-            else self.check_update_controls(True),
+            lambda result: (
+                show_result_dialog(result, self)
+                if isinstance(result, Exception)
+                else self.check_update_controls(True)
+            ),
             self.worker.install_argyll_instrument_drivers,
             wargs=(uninstall, launch_devman),
             fancy=False,
@@ -9519,8 +9526,16 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
         labels_Lab = ("LAB_L", "LAB_A", "LAB_B")
         for data in (ti3_ref, ti3_joined):
             data_formats = list(data.DATA_FORMAT.values())
-            if b"XYZ_X" in data_formats and b"XYZ_Y" in data_formats and b"XYZ_Z" in data_formats:
-                if b"LAB_L" not in data_formats and b"LAB_A" not in data_formats and b"LAB_B" not in data_formats:
+            if (
+                b"XYZ_X" in data_formats
+                and b"XYZ_Y" in data_formats
+                and b"XYZ_Z" in data_formats
+            ):
+                if (
+                    b"LAB_L" not in data_formats
+                    and b"LAB_A" not in data_formats
+                    and b"LAB_B" not in data_formats
+                ):
                     # add Lab fields to DATA_FORMAT if not present
                     data.DATA_FORMAT.add_data(labels_Lab)
                     has_Lab = False
@@ -9577,14 +9592,19 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
                 else:
                     filename, ext = os.path.splitext(ccmx)
                     desc = cgats.get_descriptor()
-                    desc = lang.getstr(ext[1:] + "." + filename, default=desc.decode("utf-8"))
+                    desc = lang.getstr(
+                        ext[1:] + "." + filename, default=desc.decode("utf-8")
+                    )
                     # If the description is not the same as the 'sane'
                     # filename, add the filename after the description
                     # (max 31 chars)
                     # See also colorimeter_correction_check_overwite, the
                     # way the filename is processed must be the same
                     argyll_compatible_path = make_argyll_compatible_path(desc)
-                    if re.sub(r"[\\/:;*?\"<>|]+", "_", argyll_compatible_path) != filename:
+                    if (
+                        re.sub(r"[\\/:;*?\"<>|]+", "_", argyll_compatible_path)
+                        != filename
+                    ):
                         ccmx = "%s &amp;lt;%s&amp;gt;" % (
                             desc,
                             ellipsis_(ccmx, 31, "m"),
@@ -9639,9 +9659,9 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
             "${PROFILE}": profile.getDescription(),
             "${PROFILE_WHITEPOINT}": "%f %f %f" % wtpt_profile,
             "${PROFILE_WHITEPOINT_NORMALIZED}": "%f %f %f" % wtpt_profile_norm,
-            "${SIMULATION_PROFILE}": sim_profile.getDescription()
-            if sim_profile
-            else "",
+            "${SIMULATION_PROFILE}": (
+                sim_profile.getDescription() if sim_profile else ""
+            ),
             "${TRC_GAMMA}": str(
                 getcfg("measurement_report.trc_gamma") if apply_trc else "null"
             ),
@@ -11202,8 +11222,14 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
                     )
                     for key, name, _volume in gamuts:
                         try:
-                            gamut_coverage = profile.tags.meta.getvalue(f"GAMUT_coverage({key})")
-                            gamut_coverage = float(gamut_coverage) if gamut_coverage is not None else gamut_coverage
+                            gamut_coverage = profile.tags.meta.getvalue(
+                                f"GAMUT_coverage({key})"
+                            )
+                            gamut_coverage = (
+                                float(gamut_coverage)
+                                if gamut_coverage is not None
+                                else gamut_coverage
+                            )
                         except (TypeError, ValueError):
                             traceback.print_exc()
                             gamut_coverage = None
@@ -11220,7 +11246,10 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
                         for _key, name, volume in gamuts:
                             vinfo.append(
                                 "{:.1f}% {}".format(
-                                    gamut_volume * ICCP.GAMUT_VOLUME_SRGB / volume * 100,
+                                    gamut_volume
+                                    * ICCP.GAMUT_VOLUME_SRGB
+                                    / volume
+                                    * 100,
                                     name,
                                 )
                             )
@@ -12355,9 +12384,9 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
                 dlg = wx.FileDialog(
                     self,
                     lang.getstr("colorimeter_correction_matrix_file.choose"),
-                    defaultDir=defaultDir
-                    if defaultFile
-                    else config.get_argyll_data_dir(),
+                    defaultDir=(
+                        defaultDir if defaultFile else config.get_argyll_data_dir()
+                    ),
                     defaultFile=defaultFile,
                     wildcard=lang.getstr("filetype.ccmx") + "|*.ccmx;*.ccss",
                     style=wx.FD_OPEN | wx.FD_FILE_MUST_EXIST,
@@ -13536,8 +13565,11 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
                 dlg.manufacturer_txt_ctrl = wx.Choice(
                     dlg, -1, choices=natsort(list(pnpidcache.values())), size=(400, -1)
                 )
-                manufacturer_selection = self.worker.get_display_edid().get("manufacturer", "")
-                if len(manufacturer_selection) < 1: manufacturer_selection = "Unknown"
+                manufacturer_selection = self.worker.get_display_edid().get(
+                    "manufacturer", ""
+                )
+                if len(manufacturer_selection) < 1:
+                    manufacturer_selection = "Unknown"
                 dlg.manufacturer_txt_ctrl.SetStringSelection(manufacturer_selection)
                 boxsizer.Add(
                     dlg.manufacturer_txt_ctrl,
@@ -14315,7 +14347,7 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
                     break
             dlg.ok.Enable(result)
 
-        for (name, desc, instruments_, importer) in [
+        for name, desc, instruments_, importer in [
             (
                 "i1d3",
                 "i1 Profiler",
@@ -16526,9 +16558,11 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
             black_luminance = self.get_black_luminance()
             profile_name = profile_name.replace(
                 "%cB",
-                "\0"
-                if black_luminance is None or not do_cal
-                else black_luminance + "cdm²",
+                (
+                    "\0"
+                    if black_luminance is None or not do_cal
+                    else black_luminance + "cdm²"
+                ),
             )
 
         # TRC / black output offset
@@ -16572,10 +16606,12 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
             auto = self.black_point_correction_auto_cb.GetValue()
             profile_name = profile_name.replace(
                 "%ck",
-                (str(k) + "% " if 0 < k < 100 else "")
-                + (lang.getstr("neutral") if k > 0 else "\0").lower()
-                if trc and not auto
-                else "\0",
+                (
+                    (str(k) + "% " if 0 < k < 100 else "")
+                    + (lang.getstr("neutral") if k > 0 else "\0").lower()
+                    if trc and not auto
+                    else "\0"
+                ),
             )
 
         # Black point rate
@@ -17949,7 +17985,7 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
                             setcfg("trc.type", o[0:1])
                             setcfg("trc", o[1:])
                             continue
-                        if o[0:1] =="f":
+                        if o[0:1] == "f":
                             setcfg("calibration.black_output_offset", o[1:])
                             continue
                         if o[0:1] == "a":
@@ -18652,20 +18688,26 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
                     sizer.Add(chk, flag=wx.ALIGN_LEFT)
                 scrolled.SetupScrolling()
                 scrolled.MinSize = (
-                    int(min(
-                        scrolled.GetVirtualSize()[0]
-                        + 4 * scale
-                        + wx.SystemSettings_GetMetric(wx.SYS_VSCROLL_X),
-                        self.GetDisplay().ClientArea[2] - (12 * 3 + 32) * scale,
-                    )),
-                    int(min(
-                        ((chk.Size[1] + 4) * min(len(self.related_files), 20) - 4)
-                        * scale,
-                        max(
-                            self.GetDisplay().ClientArea[3] - dlg.Size[1] - 40 * scale,
-                            chk.Size[1],
-                        ),
-                    )),
+                    int(
+                        min(
+                            scrolled.GetVirtualSize()[0]
+                            + 4 * scale
+                            + wx.SystemSettings_GetMetric(wx.SYS_VSCROLL_X),
+                            self.GetDisplay().ClientArea[2] - (12 * 3 + 32) * scale,
+                        )
+                    ),
+                    int(
+                        min(
+                            ((chk.Size[1] + 4) * min(len(self.related_files), 20) - 4)
+                            * scale,
+                            max(
+                                self.GetDisplay().ClientArea[3]
+                                - dlg.Size[1]
+                                - 40 * scale,
+                                chk.Size[1],
+                            ),
+                        )
+                    ),
                 )
                 dlg.sizer0.SetSizeHints(dlg)
                 dlg.sizer0.Layout()
@@ -18810,7 +18852,7 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
                     self.aboutdialog.panel,
                     -1,
                     label="ArgyllCMS",
-                    URL="https://www.argyllcms.com/",
+                    URL=config.defaults.get("argyll.domain"),
                 ),
                 wx.StaticText(
                     self.aboutdialog.panel,
@@ -19657,9 +19699,11 @@ class MeasurementFileCheckSanityDialog(ConfirmDialog):
         ConfirmDialog.__init__(
             self,
             parent,
-            title=os.path.basename(ti3.filename)
-            if ti3.filename
-            else lang.getstr("measurement_file.check_sanity"),
+            title=(
+                os.path.basename(ti3.filename)
+                if ti3.filename
+                else lang.getstr("measurement_file.check_sanity")
+            ),
             ok=lang.getstr("ok"),
             cancel=lang.getstr("cancel"),
             alt=lang.getstr("invert_selection"),
@@ -19701,7 +19745,9 @@ class MeasurementFileCheckSanityDialog(ConfirmDialog):
             style = wx.BORDER_SIMPLE
         else:
             style = wx.BORDER_THEME
-        dlg.grid = CustomGrid(dlg, -1, size=(int(940 * scale), int(200 * scale)), style=style)
+        dlg.grid = CustomGrid(
+            dlg, -1, size=(int(940 * scale), int(200 * scale)), style=style
+        )
         grid = dlg.grid
         grid.DisableDragRowSize()
         grid.SetCellHighlightPenWidth(0)
@@ -19993,9 +20039,12 @@ class MeasurementFileCheckSanityDialog(ConfirmDialog):
         grid.SetCellValue(
             row,
             0,
-            "1"
-            if (not delta or (delta["E_ok"] and delta["L_ok"])) and delta_to_sRGB["ok"]
-            else "",
+            (
+                "1"
+                if (not delta or (delta["E_ok"] and delta["L_ok"]))
+                and delta_to_sRGB["ok"]
+                else ""
+            ),
         )
         for col in range(3):
             dlg.mark_cell(

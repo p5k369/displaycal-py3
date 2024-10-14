@@ -1092,7 +1092,6 @@ wx._ScrolledWindow = wx.ScrolledWindow
 
 
 class ScrolledWindow(wx._ScrolledWindow):
-
     """ScrolledWindow that scrolls child controls into view on focus.
 
     OnChildFocus and ScrollChildIntoView borrowed from wx.lib.scrolledpanel.
@@ -1156,7 +1155,6 @@ ScrolledPanel.ScrollChildIntoView = ScrolledWindow.ScrollChildIntoView
 
 
 class GenButton(object):
-
     """A generic button, based on wx.lib.buttons.GenButton.
 
     Fixes wx.lib.buttons.ThemedGenButton not taking into account backgroun
@@ -1284,7 +1282,6 @@ class GenBitmapButton(GenButton, _GenBitmapButton):
 
 
 class ThemedGenButton(GenButton, _ThemedGenButton):
-
     """A themed generic button, based on wx.lib.buttons.ThemedGenButton.
 
     Fixes wx.lib.buttons.ThemedGenButton sometimes not reflecting enabled
@@ -1393,7 +1390,6 @@ class ThemedGenButton(GenButton, _ThemedGenButton):
 
 
 class PlateButton(platebtn.PlateButton):
-
     """Fixes wx.lib.platebtn.PlateButton sometimes not reflecting enabled state
     correctly aswelll as other quirks
 
@@ -1738,14 +1734,16 @@ class GenBitmapTextButton(GenButton, _GenBitmapTextButton):
         if sys.platform != "win32" and not self.up:
             dx = dy = self.labelDelta
 
-        pos_x = int((width - bw - sw - tw) / 2) + dx  # adjust for bitmap and text to centre
+        # adjust for bitmap and text to centre
+        pos_x = int((width - bw - sw - tw) / 2) + dx
         if bmp is not None:
             dc.DrawBitmap(
                 bmp, pos_x, int((height - bh) / 2) + dy, hasMask
             )  # draw bitmap if available
             pos_x = pos_x + sw  # extra spacing from bitmap
 
-        dc.DrawText(label, pos_x + dx + bw, int((height - th) / 2) + dy)  # draw the text
+        # draw the text
+        dc.DrawText(label, pos_x + dx + bw, int((height - th) / 2) + dy)
 
 
 class ThemedGenBitmapTextButton(ThemedGenButton, GenBitmapTextButton):

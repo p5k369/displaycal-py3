@@ -355,6 +355,15 @@ def get_argyll_version(name, paths=None):
 
 
 def get_argyll_version_string(name, paths=None):
+    """Return the version of the requested Argyll utility.
+
+    Args:
+        name (str): The name of the Argyll utility.
+        paths (Union[list, None]): Paths to look for Argyll executables.
+
+    Returns:
+        str: The Argyll utility version.
+    """
     argyll_version_string = b"0.0.0"
     cmd = get_argyll_util(name, paths)
     if sys.platform == "win32":
@@ -378,7 +387,7 @@ def get_argyll_version_string(name, paths=None):
         if isinstance(line, bytes):
             line = line.strip()
             if b"version" in line.lower():
-                argyll_version_string = line[line.lower().find(b"version") + 8:]
+                argyll_version_string = line[line.lower().find(b"version") + 8 :]
                 break
     return argyll_version_string.decode("utf-8")
 
@@ -492,7 +501,7 @@ class WorkerBase(object):
 
     def log(self, *args, **kwargs):
         """Log to global logfile and session logfile (if any)"""
-        # if we have any exceptions print the traceback, so we bust'em.
+        # if we have any exceptions print the traceback, so we bust'em.
         if any([isinstance(arg, BaseException) for arg in args]):
             traceback.print_exc()
         msg = " ".join(safe_basestring(arg) for arg in args)
@@ -788,7 +797,7 @@ class Xicclu(WorkerBase):
             if p.poll() is None:
                 # We don't use communicate() because it will end the
                 # process
-                joined_data = "\n".join(idata[chunklen * i: chunklen * (i + 1)]) + "\n"
+                joined_data = "\n".join(idata[chunklen * i : chunklen * (i + 1)]) + "\n"
                 p.stdin.write(joined_data.encode())
                 p.stdin.flush()
             else:

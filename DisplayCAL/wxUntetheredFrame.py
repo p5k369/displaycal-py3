@@ -515,6 +515,7 @@ class UntetheredFrame(BaseFrame):
             )
             if not XYZ:
                 return
+
             def is_white(r):
                 return r["RGB_R"] == 100 and r["RGB_G"] == 100 and r["RGB_B"] == 100
 
@@ -535,7 +536,11 @@ class UntetheredFrame(BaseFrame):
                 print("Delta E to last recorded Lab: %.4f" % delta["E"])
                 print("Abs. delta L to last recorded Lab: %.4f" % abs(delta["L"]))
                 print("Abs. delta C to last recorded Lab: %.4f" % abs(delta["C"]))
-            consecutive_white_patch = self.index and is_white(row) and is_white(self.cgats[0].DATA[self.index - 1])
+            consecutive_white_patch = (
+                self.index
+                and is_white(row)
+                and is_white(self.cgats[0].DATA[self.index - 1])
+            )
             measurement_exceeds_delta = delta["E"] > getcfg("untethered.min_delta") or (
                 abs(delta["L"]) > getcfg("untethered.min_delta.lightness")
                 and abs(delta["C"]) < getcfg("untethered.max_delta.chroma")
@@ -554,7 +559,7 @@ class UntetheredFrame(BaseFrame):
                             "RGB_R": row["RGB_R"],
                             "RGB_G": row["RGB_G"],
                             "RGB_B": row["RGB_B"],
-                            "SAMPLE_ID": row["SAMPLE_ID"]
+                            "SAMPLE_ID": row["SAMPLE_ID"],
                         }
                     )
                     if query:

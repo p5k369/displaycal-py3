@@ -510,11 +510,21 @@ def get_bitmap_as_icon(size, name, scale=True):
 
 
 def get_argyll_data_dir():
-    if getcfg("argyll.version") < "1.5.0":
+    """Return ArgyllCMS data dir.
+
+    Returns:
+        str: The ArgyllCMS data dir.
+    """
+    argyll_version = getcfg("argyll.version")
+    if isinstance(argyll_version, str):
+        argyll_version = list(map(int, argyll_version.split(".")))
+
+    if argyll_version < [1, 5, 0]:
         argyll_data_dirname = "color"
     else:
         argyll_data_dirname = "ArgyllCMS"
-    if sys.platform == "darwin" and getcfg("argyll.version") < "1.5.0":
+
+    if sys.platform == "darwin" and argyll_version < [1, 5, 0]:
         return os.path.join(
             library if is_superuser() else library_home, argyll_data_dirname
         )
@@ -623,8 +633,12 @@ def get_instrument_name():
     return ""
 
 
-def get_measureframe_dimensions(dimensions_measureframe=None, percent=10):
-    """return measurement area size adjusted for percentage of screen area"""
+def get_measureframe_dimensions(dimensions_measureframe=None, percent=10) -> str:
+    """Return measurement area size adjusted for percentage of screen area.
+
+    Returns:
+        str: The coma separated measurement frame size.
+    """
     if not dimensions_measureframe:
         dimensions_measureframe = getcfg("dimensions.measureframe")
     dimensions_measureframe = [float(n) for n in dimensions_measureframe.split(",")]
@@ -686,9 +700,7 @@ def get_data_path(relpath, rex=None):
                 try:
                     filelist = listdir_re(curpath, rex)
                 except Exception as exception:
-                    print(
-                        f"Error - directory '{curpath}' listing failed: {exception}"
-                    )
+                    print(f"Error - directory '{curpath}' listing failed: {exception}")
                 else:
                     for filename in filelist:
                         if filename not in intersection:
@@ -701,11 +713,13 @@ def get_data_path(relpath, rex=None):
     return None if len(paths) == 0 else paths
 
 
-def get_default_dpi():
-    if sys.platform == "darwin":
-        return 72.0
-    else:
-        return 96.0
+def get_default_dpi() -> float:
+    """Return default DPI depending on the current platform.
+
+    Returns:
+        float: The DPI value.
+    """
+    return 72.0 if sys.platform == "darwin" else 96.0
 
 
 def runtimeconfig(pyfile):
@@ -1016,6 +1030,7 @@ defaults = {
     "argyll.debug": 0,
     "argyll.dir": None,
     "argyll.version": "0.0.0",
+    "argyll.domain": "https://www.argyllcms.com",
     "drift_compensation.blacklevel": 0,
     "drift_compensation.whitelevel": 0,
     "calibration.ambient_viewcond_adjust": 0,
@@ -1185,11 +1200,11 @@ defaults = {
     "profile.black_point_compensation": 0 if sys.platform != "darwin" else 1,
     "profile.black_point_correction": 0.0,
     "profile.create_gamut_views": 1,
-    "profile.install_scope": "l"
-    if (sys.platform != "win32" and os.geteuid() == 0)  # or
-    # (sys.platform == "win32" and
-    # sys.getwindowsversion() >= (6, ))
-    else "u",  # Linux, OSX
+    "profile.install_scope": (
+        "l"
+        if (sys.platform != "win32" and os.geteuid() == 0)
+        else "u"  # Linux, OSX
+    ),
     "profile.license": "Public Domain",
     "profile.load_on_login": 1,
     "profile.name": "_".join(

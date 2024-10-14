@@ -367,7 +367,7 @@ class JavaScriptPacker:
             # print offset, match.groups()
             length = len(match.group(offset + 2))
             start = length - max(length - len(match.group(offset + 3)), 0)
-            return match.group(offset + 1)[start: start + length] + match.group(
+            return match.group(offset + 1)[start : start + length] + match.group(
                 offset + 4
             )
 

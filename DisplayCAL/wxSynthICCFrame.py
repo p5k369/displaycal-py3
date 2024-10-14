@@ -1002,7 +1002,11 @@ class SynthICCFrame(BaseFrame, LUT3DMixin):
                     rgb_space[0] = 1.0  # Set gamma to 1.0 (not actually used)
                     rgb_space = colormath.get_rgb_space(rgb_space)
                     linebuffered_logfiles = []
-                    if sys.stdout and hasattr(sys.stdout, "isatty") and sys.stdout.isatty():
+                    if (
+                        sys.stdout
+                        and hasattr(sys.stdout, "isatty")
+                        and sys.stdout.isatty()
+                    ):
                         linebuffered_logfiles.append(print)
                     else:
                         linebuffered_logfiles.append(log)
@@ -1301,7 +1305,8 @@ class SynthICCFrame(BaseFrame, LUT3DMixin):
             self.tech_ctrl.SetStringSelection(self.tech["vidc"])
             self.ciis_ctrl.SetStringSelection(self.ciis["fpce"])
         elif (
-            self.profile_class_ctrl.GetStringSelection() == self.profile_classes[b"scnr"]
+            self.profile_class_ctrl.GetStringSelection()
+            == self.profile_classes[b"scnr"]
         ):
             # If 'input' profile, reset class/tech/colorimetric intent image state
             self.profile_class_ctrl.SetStringSelection(self.profile_classes[b"mntr"])

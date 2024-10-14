@@ -150,7 +150,9 @@ if sys.platform == "win32":
     _makedirs = os.makedirs
 
     def makedirs(path, mode=0o777, *args, **kwargs):
-        return _makedirs(make_win32_compatible_long_path(path, 247), mode, *args, **kwargs)
+        return _makedirs(
+            make_win32_compatible_long_path(path, 247), mode, *args, **kwargs
+        )
 
     os.makedirs = makedirs
 
@@ -286,7 +288,7 @@ def expandvarsu(path):
         while index < pathlen:
             c = path[index]
             if c == "'":  # no expansion within single quotes
-                path = path[index + 1:]
+                path = path[index + 1 :]
                 pathlen = len(path)
                 try:
                     index = path.index("'")
@@ -295,11 +297,11 @@ def expandvarsu(path):
                     res = res + path
                     index = pathlen - 1
             elif c == "%":  # variable or '%'
-                if path[index + 1: index + 2] == "%":
+                if path[index + 1 : index + 2] == "%":
                     res = res + c
                     index = index + 1
                 else:
-                    path = path[index + 1:]
+                    path = path[index + 1 :]
                     pathlen = len(path)
                     try:
                         index = path.index("%")
@@ -313,11 +315,11 @@ def expandvarsu(path):
                         else:
                             res = res + "%" + var + "%"
             elif c == "$":  # variable or '$$'
-                if path[index + 1: index + 2] == "$":
+                if path[index + 1 : index + 2] == "$":
                     res = res + c
                     index = index + 1
-                elif path[index + 1: index + 2] == "{":
-                    path = path[index + 2:]
+                elif path[index + 1 : index + 2] == "{":
+                    path = path[index + 2 :]
                     pathlen = len(path)
                     try:
                         index = path.index("}")
@@ -332,11 +334,11 @@ def expandvarsu(path):
                 else:
                     var = ""
                     index = index + 1
-                    c = path[index: index + 1]
+                    c = path[index : index + 1]
                     while c != "" and c in varchars:
                         var = var + c
                         index = index + 1
-                        c = path[index: index + 1]
+                        c = path[index : index + 1]
                     if var in os.environ:
                         res = res + getenvu(var)
                     else:
@@ -688,7 +690,7 @@ def relpath(path, start):
     if path == start:
         return "."
     elif path[: len(start)] == start:
-        return os.path.sep.join(path[len(start):])
+        return os.path.sep.join(path[len(start) :])
     elif start[: len(path)] == path:
         return os.path.sep.join([".."] * (len(start) - len(path)))
 

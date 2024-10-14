@@ -510,7 +510,6 @@ def _free_library(handle):
 
 
 class UnloadableWinDLL(object):
-
     """WinDLL wrapper that allows unloading"""
 
     def __init__(self, dllname):
@@ -547,7 +546,6 @@ class UnloadableWinDLL(object):
 
 
 class MSCMS(UnloadableWinDLL):
-
     """MSCMS wrapper (optionally) allowing unloading"""
 
     def __init__(self, bootstrap_icm32=False):

@@ -38,10 +38,10 @@ def findall(dir=os.curdir):
         files = map(make_rel, files)
     return list(files)
 
+
 import distutils.filelist
 
 distutils.filelist.findall = findall  # Fix findall bug in distutils
-
 
 
 bits = platform.architecture()[0][:2]
@@ -77,9 +77,6 @@ from DisplayCAL.util_os import getenvu, relpath, safe_glob
 from DisplayCAL.util_str import safe_str
 
 appname = name
-
-
-
 
 
 if sys.platform in ("darwin", "win32"):
@@ -211,6 +208,7 @@ msiversion = ".".join(
     )
 )
 
+
 class Target:
     def __init__(self, **kwargs):
         self.__dict__.update(kwargs)
@@ -232,22 +230,20 @@ def get_data(tgt_dir, key, pkgname=None, subkey=None, excludes=None):
     data = []
     for pth in files:
         if not [exclude for exclude in excludes or [] if fnmatch(pth, exclude)]:
-            normalized_path = os.path.normpath(os.path.join(tgt_dir, os.path.dirname(pth)))
-            safe_path = [relpath(p, src_dir) for p in safe_glob(os.path.join(resource_dir, pth))]
+            normalized_path = os.path.normpath(
+                os.path.join(tgt_dir, os.path.dirname(pth))
+            )
+            safe_path = [
+                relpath(p, src_dir) for p in safe_glob(os.path.join(resource_dir, pth))
+            ]
             data.append((normalized_path, safe_path))
     return data
+
 
 def get_scripts(excludes=None):
     # It is required that each script has an accompanying .desktop file
     scripts_with_desc = []
-    scripts = safe_glob(
-        os.path.join(
-            pydir,
-            "..",
-            "scripts",
-            appname.lower() + "*"
-        )
-    )
+    scripts = safe_glob(os.path.join(pydir, "..", "scripts", appname.lower() + "*"))
 
     def sortbyname(a, b):
         a, b = [os.path.splitext(v)[0] for v in (a, b)]
@@ -265,12 +261,7 @@ def get_scripts(excludes=None):
         script = os.path.basename(script)
         if script == appname.lower() + "-apply-profiles-launcher":
             continue
-        desktopfile = os.path.join(
-            pydir,
-            "..",
-            "misc",
-            f"{script}.desktop"
-        )
+        desktopfile = os.path.join(pydir, "..", "misc", f"{script}.desktop")
         if os.path.isfile(desktopfile):
             cfg = ConfigParser()
             cfg.read(desktopfile)
@@ -317,19 +308,7 @@ def build_py2exe():
     data_files += get_data(doc, "doc", excludes=["LICENSE.txt"])
     if data_files:
         data_files.append(
-            (
-                doc,
-                [
-                    relpath(
-                        os.path.join(
-                            pydir,
-                            "..",
-                            "LICENSE.txt"
-                        ),
-                        source_dir
-                    )
-                ]
-            )
+            (doc, [relpath(os.path.join(pydir, "..", "LICENSE.txt"), source_dir)])
         )
     # metainfo / appdata.xml
     data_files.append(
@@ -338,12 +317,7 @@ def build_py2exe():
             [
                 relpath(
                     os.path.normpath(
-                        os.path.join(
-                            pydir,
-                            "..",
-                            "dist",
-                            f"{appstream_id}.appdata.xml"
-                        )
+                        os.path.join(pydir, "..", "dist", f"{appstream_id}.appdata.xml")
                     ),
                     source_dir,
                 )
@@ -353,7 +327,7 @@ def build_py2exe():
     data_files += get_data(data, "package_data", name, excludes=["theme/icons/*"])
     data_files += get_data(data, "data")
     data_files += get_data(data, "xtra_package_data", name, sys.platform)
-    
+
     # Add python and pythonw
     data_files.extend(
         [
@@ -361,9 +335,7 @@ def build_py2exe():
                 os.path.join(data, "lib"),
                 [
                     sys.executable,
-                    os.path.join(
-                        os.path.dirname(sys.executable), "pythonw.exe"
-                    ),
+                    os.path.join(os.path.dirname(sys.executable), "pythonw.exe"),
                 ],
             )
         ]
@@ -430,8 +402,7 @@ def build_py2exe():
         ):
             if not os.path.basename(iconpath).startswith(name.lower()) or (
                 sys.platform in ("darwin", "win32")
-                and dname
-                in ("16x16", "32x32", "48x48", largest_iconbundle_icon_size)
+                and dname in ("16x16", "32x32", "48x48", largest_iconbundle_icon_size)
             ):
                 # In addition to UI element icons, we also need all the app
                 # icons we use in get_icon_bundle under macOS/Windows,
@@ -529,7 +500,7 @@ def build_py2exe():
                     (
                         ""
                         if script == name.lower()
-                        else script[len(name):].lower().replace("-", "_")
+                        else script[len(name) :].lower().replace("-", "_")
                     ),
                 )
                 for script, desc in scripts
@@ -551,7 +522,6 @@ def build_py2exe():
             ]
         )
 
-    
     import wx
     from winmanifest_util import getmanifestxml
 
@@ -640,9 +610,7 @@ def build_py2exe():
     # Programs that can run with and without GUI
     console_scripts = [f"{name}-VRML-to-X3D-converter"]  # No "-console" suffix!
     for console_script in console_scripts:
-        console_script_path = os.path.join(
-            tmp_scripts_dir, console_script + "-console"
-        )
+        console_script_path = os.path.join(tmp_scripts_dir, console_script + "-console")
         if not os.path.isfile(console_script_path):
             shutil.copy(
                 os.path.join(
@@ -777,17 +745,13 @@ def build_py2exe():
         )
     for pkg in attrs.get("packages", []):
         pkg = os.path.join(*pkg.split("."))
-        pkgdir = os.path.sep.join(
-            attrs.get("package_dir", {}).get(pkg, pkg).split("/")
-        )
+        pkgdir = os.path.sep.join(attrs.get("package_dir", {}).get(pkg, pkg).split("/"))
         manifest_in.append("include " + os.path.join(pkgdir, "*.py"))
         # manifest_in.append("include " + os.path.join(pkgdir, "*.pyd"))
         # manifest_in.append("include " + os.path.join(pkgdir, "*.so"))
         for obj in attrs.get("package_data", {}).get(pkg, []):
             print(f"obj: {obj}")
-            manifest_in.append(
-                "include " + os.path.sep.join([pkgdir] + obj.split("/"))
-            )
+            manifest_in.append("include " + os.path.sep.join([pkgdir] + obj.split("/")))
     for pymod in attrs.get("py_modules", []):
         manifest_in.append("include {}".format(os.path.join(*pymod.split("."))))
     manifest_in.append(
@@ -837,17 +801,17 @@ def build_py2exe():
     print("py2exe.freeze DONE!")
 
     shutil.copy(
-        os.path.join(
-            dist_dir, f"python{sys.version_info[0]}{sys.version_info[1]}.dll"
-        ),
+        os.path.join(dist_dir, f"python{sys.version_info[0]}{sys.version_info[1]}.dll"),
         os.path.join(
             dist_dir, "lib", f"python{sys.version_info[0]}{sys.version_info[1]}.dll"
         ),
     )
 
     from vc90crt import name as vc90crt_name, vc90crt_copy_files
+
     vc90crt_copy_files(dist_dir)
     vc90crt_copy_files(os.path.join(dist_dir, "lib"))
+
 
 if __name__ == "__main__":
     build_py2exe()

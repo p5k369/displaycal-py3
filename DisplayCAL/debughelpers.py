@@ -106,9 +106,11 @@ def handle_error(error, parent=None, silent=False, tb=True):
                 elif isinstance(error, Exception):
                     icon = wx.ICON_ERROR
             dlg = wx.MessageDialog(
-                parent
-                if parent not in (False, None) and parent.IsShownOnScreen()
-                else None,
+                (
+                    parent
+                    if parent not in (False, None) and parent.IsShownOnScreen()
+                    else None
+                ),
                 msg,
                 app.AppName,
                 wx.OK | icon,

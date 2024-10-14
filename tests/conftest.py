@@ -11,6 +11,7 @@ import tempfile
 
 import DisplayCAL
 from DisplayCAL.config import setcfg
+from DisplayCAL.worker import get_argyll_latest_version
 
 
 @pytest.fixture(scope="module")
@@ -55,17 +56,18 @@ def argyll():
     This will search for ArgyllCMS binaries under ``.local/bin/Argyll*/bin`` and if it
     can not find it, it will download from the source.
     """
+    argyll_version = get_argyll_latest_version()
     argyll_download_url = {
-        "win32": "https://www.argyllcms.com/Argyll_V3.3.0_win64_exe.zip",
-        "darwin": "https://www.argyllcms.com/Argyll_V3.3.0_osx10.6_x86_64_bin.tgz",
-        "linux": "https://www.argyllcms.com/Argyll_V3.3.0_linux_x86_64_bin.tgz",
+        "win32": f"https://www.argyllcms.com/Argyll_V{argyll_version}_win64_exe.zip",
+        "darwin": f"https://www.argyllcms.com/Argyll_V{argyll_version}_osx10.6_x86_64_bin.tgz",
+        "linux": f"https://www.argyllcms.com/Argyll_V{argyll_version}_linux_x86_64_bin.tgz",
     }
 
     # first look in to ~/local/bin/ArgyllCMS
     home = pathlib.Path().home()
     argyll_search_paths = [
         home / ".local" / "bin" / "Argyll" / "bin",
-        home / ".local" / "bin" / "Argyll_V3.3.0" / "bin",
+        home / ".local" / "bin" / f"Argyll_V{argyll_version}" / "bin",
     ]
 
     argyll_path = None
@@ -108,7 +110,7 @@ def argyll():
         shutil.rmtree(argyll_temp_path)
         os.chdir(current_working_directory)
 
-    argyll_path = pathlib.Path(argyll_temp_path) / "Argyll_V3.3.0" / "bin"
+    argyll_path = pathlib.Path(argyll_temp_path) / f"Argyll_V{argyll_version}" / "bin"
     print(f"argyll_path: {argyll_path}")
     if argyll_path.is_dir():
         setcfg("argyll.dir", str(argyll_path.absolute()))
@@ -125,6 +127,7 @@ def random_icc_profile():
     import tempfile
     from DisplayCAL import colormath
     from DisplayCAL import ICCProfile
+
     rec709_gamma18 = list(colormath.get_rgb_space("Rec. 709"))
     icc_profile = ICCProfile.ICCProfile.from_rgb_space(
         rec709_gamma18, b"Rec. 709 gamma 1.8"

@@ -930,7 +930,9 @@ class LUT3DMixin(object):
             # if exception.__class__.__name__ in dir(exceptions):
             #     raise
             if debug:
-                messages = traceback.format_exception(type(exception), exception, exception.__traceback__)
+                messages = traceback.format_exception(
+                    type(exception), exception, exception.__traceback__
+                )
                 print("[D] Worker raised exception: \n" + "\n".join(messages))
             return exception
         return True

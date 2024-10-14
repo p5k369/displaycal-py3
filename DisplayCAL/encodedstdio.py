@@ -87,7 +87,6 @@ def write(stream, data):
 
 
 class EncodedStream(object):
-
     """Unicode strings written to an EncodedStream are automatically encoded
     and strings read from it automtically decoded with the given encoding
     and error handling.

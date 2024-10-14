@@ -26,7 +26,6 @@ class VRMLParseError(Exception):
 
 
 class Tag(object):
-
     """X3D Tag"""
 
     def __init__(self, tagname, **attributes):
@@ -594,7 +593,7 @@ def vrml2x3dom(vrml, worker=None):
             "profile": "Immersive",
             "version": "3.0",
             "xsd:noNamespaceSchemaLocation": "http://www.web3d.org/specifications/x3d-3.0.xsd",
-        }
+        },
     )
     tag = Tag("Scene")
     x3d.append_child(tag)
