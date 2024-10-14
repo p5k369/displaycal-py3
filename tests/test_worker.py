@@ -550,7 +550,7 @@ def test_prepare_dispcal_1():
 
 @pytest.mark.skipif(
     os.getenv("GITHUB_ACTIONS") == "true",
-    "Not working properly on GitHub.",
+    reason="Not working properly on GitHub.",
 )
 def test_get_argyll_version_string_returns_a_proper_value():
     """get_argyll_version_string() returns a proper value."""
