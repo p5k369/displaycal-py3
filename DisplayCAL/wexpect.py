@@ -2168,9 +2168,11 @@ class Wtty(object):
             "wexpect.ConsoleReader(wexpect.join_args(args), %i, %i, cp=%s, c=%s, r=%s, logdir=%r)"
             % (
                 # this fixes running Argyll commands through py2exe frozen python
-                "setattr(sys, 'frozen', '%s'); ".format(
-                    getattr(sys, "frozen")
-                ) if hasattr(sys, "frozen") else "",
+                (
+                    "setattr(sys, 'frozen', '%s'); ".format(getattr(sys, "frozen"))
+                    if hasattr(sys, "frozen")
+                    else ""
+                ),
                 ("%r" % spath).replace('"', r"\""),
                 ("%r" % args).replace('"', r"\""),
                 pid,

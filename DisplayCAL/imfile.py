@@ -106,7 +106,6 @@ def write_rgb_clut(stream_or_filename, clutres=33, bitdepth=16, format=None):
 
 
 class Image(object):
-
     """Write 8 or 16 bit image files in DPX, PNG or TIFF format.
 
     Writing of single color images is highly optimized when using a single
@@ -270,9 +269,7 @@ class Image(object):
         stream.write(b"\0" * 4)  # Count
         stream.write(b"\0" * 32)  # Format
         # Frame position in sequence
-        stream.write(
-            struct.pack(">I", self.extrainfo.get("frame_position", 2**32 - 1))
-        )
+        stream.write(struct.pack(">I", self.extrainfo.get("frame_position", 2**32 - 1)))
         # Sequence length
         stream.write(
             struct.pack(">I", self.extrainfo.get("sequence_length", 2**32 - 1))

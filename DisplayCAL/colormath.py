@@ -585,12 +585,16 @@ def wp_adaption_matrix(
     # cat = adaption matrix or predefined choice ('CAT02', 'Bradford',
     # 'Von Kries', 'XYZ Scaling', see cat_matrices), defaults to 'Bradford'
     cachehash = (
-        tuple(whitepoint_source)
-        if isinstance(whitepoint_source, (list, tuple))
-        else whitepoint_source,
-        tuple(whitepoint_destination)
-        if isinstance(whitepoint_destination, (list, tuple))
-        else whitepoint_destination,
+        (
+            tuple(whitepoint_source)
+            if isinstance(whitepoint_source, (list, tuple))
+            else whitepoint_source
+        ),
+        (
+            tuple(whitepoint_destination)
+            if isinstance(whitepoint_destination, (list, tuple))
+            else whitepoint_destination
+        ),
         cat if isinstance(cat, str) else id(cat),
     )
     if cachehash in wp_adaption_matrix.cache:
@@ -751,6 +755,7 @@ def interp(x, xp, fp, left=None, right=None, period=None):
     #       numpy.interp all the time, and it is kind of rude in that manner.
     #       Please respect the previous implementation, but use nump.interp again.
     import numpy
+
     return numpy.interp(x, xp, fp, left, right, period)
 
 
@@ -776,13 +781,7 @@ def interp_fill(xp, fp, new_size, use_numpy=False):
     last = xp[-1]
     # interp = Interp(xp, fp, use_numpy=use_numpy)
     for i in range(new_size):
-        result.append(
-            interp(
-                i / (new_size - 1.0) * last,
-                xp,
-                fp
-            )
-        )
+        result.append(interp(i / (new_size - 1.0) * last, xp, fp))
     return result
 
 
@@ -814,7 +813,7 @@ def smooth_avg_old(values, passes=1, window=None, protect=None):
                     tl = (len(tmp_window) - 1) / 2
                     # print j, tl, tmp_window
                     if tl > 0 and j - tl >= 0 and j + tl <= len(values) - 1:
-                        windowslice = values[int(j - tl): int(j + tl + 1)]
+                        windowslice = values[int(j - tl) : int(j + tl + 1)]
                         windowsize = 0
                         for k, weight in enumerate(tmp_window):
                             windowsize += float(weight) * windowslice[k]
@@ -852,7 +851,7 @@ def smooth_avg(values, passes=1, window=None, protect=None):
     # fix the window values
     window_length = float(len(window))
     window_weight = sum(window)
-    window = tuple([i/window_weight for i in window])
+    window = tuple([i / window_weight for i in window])
 
     # extend the array by ceil(window_size / 2)
     extend_amount = math.ceil(window_length / 2)
@@ -862,8 +861,8 @@ def smooth_avg(values, passes=1, window=None, protect=None):
     values = values[0:1] * extend_amount + values + values[-1:] * extend_amount
 
     protection_extension = 1
-    protected_start = values[:extend_amount + protection_extension]
-    protected_end = values[-extend_amount - protection_extension:]
+    protected_start = values[: extend_amount + protection_extension]
+    protected_end = values[-extend_amount - protection_extension :]
 
     protected_values = {}
     if protect is not None:
@@ -872,11 +871,12 @@ def smooth_avg(values, passes=1, window=None, protect=None):
             protected_values[index + extend_amount] = values[index + extend_amount]
 
     import numpy
+
     for i in range(passes):
         values = list(numpy.convolve(values, window, mode="same"))
         # Protect start and end values
-        values[:extend_amount + protection_extension] = protected_start
-        values[-extend_amount - protection_extension:] = protected_end
+        values[: extend_amount + protection_extension] = protected_start
+        values[-extend_amount - protection_extension :] = protected_end
 
         # restore protected values
         if protect is not None:
@@ -3285,6 +3285,7 @@ class Interp(object):
     def _interp(self, x):
         if self.use_numpy:
             import numpy
+
             return self.numpy.interp(x, self.xp, self.fp, self.left, self.right)
         else:
             return interp(x, self.xp, self.fp, self.left, self.right)
@@ -3409,7 +3410,6 @@ class BT1886(object):
 
 
 class BT2390(object):
-
     """Roll-off for SMPTE 2084 (PQ) according to Report ITU-R BT.2390-2 HDR TV"""
 
     def __init__(

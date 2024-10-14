@@ -161,9 +161,9 @@ class LogonTrigger(_Trigger):
 class ResumeFromSleepTrigger(_Trigger):
     def __init__(self, *args, **kwargs):
         _Trigger.__init__(self, *args, **kwargs)
-        self[
-            "subscription"
-        ] = """&lt;QueryList&gt;&lt;Query Id="0" Path="System"&gt;&lt;Select Path="System"&gt;*[System[Provider[@Name='Microsoft-Windows-Power-Troubleshooter'] and (Level=4 or Level=0) and (EventID=1)]]&lt;/Select&gt;&lt;/Query&gt;&lt;/QueryList&gt;"""
+        self["subscription"] = (
+            """&lt;QueryList&gt;&lt;Query Id="0" Path="System"&gt;&lt;Select Path="System"&gt;*[System[Provider[@Name='Microsoft-Windows-Power-Troubleshooter'] and (Level=4 or Level=0) and (EventID=1)]]&lt;/Select&gt;&lt;/Query&gt;&lt;/QueryList&gt;"""
+        )
         self["cls_name"] = "EventTrigger"
 
 
@@ -248,9 +248,9 @@ class Task(_Dict2XML):
         kwargs["actions"] = _Dict2XML(
             items=actions or [], cls_name="Actions", cls_attr=' Context="Author"'
         )
-        kwargs[
-            "cls_attr"
-        ] = ' version="1.2" xmlns="http://schemas.microsoft.com/windows/2004/02/mit/task"'
+        kwargs["cls_attr"] = (
+            ' version="1.2" xmlns="http://schemas.microsoft.com/windows/2004/02/mit/task"'
+        )
         _Dict2XML.__init__(self, kwargs)
 
     def add_exec_action(self, cmd, args=None):

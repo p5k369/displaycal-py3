@@ -26,16 +26,8 @@ if not VERSION or test_update:
     VERSION = VERSION_BASE = (0, 0, 0)
     VERSION_STRING = ".".join(str(n) for n in VERSION)
 
-author = ", ".join([
-    "Florian Höch",
-    "Erkan Özgür Yılmaz",
-    "Patrick Zwerschke"
-])
-author_ascii = ", ".join([
-    "Florian Hoech",
-    "Erkan Ozgur Yilmaz",
-    "Patrick Zwerschke"
-])
+author = ", ".join(["Florian Höch", "Erkan Özgür Yılmaz", "Patrick Zwerschke"])
+author_ascii = ", ".join(["Florian Hoech", "Erkan Ozgur Yilmaz", "Patrick Zwerschke"])
 description = (
     "Display calibration and profiling with a focus on accuracy and versatility"
 )

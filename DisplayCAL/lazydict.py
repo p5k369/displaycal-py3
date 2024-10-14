@@ -45,7 +45,6 @@ def unescape(string):
 
 
 class LazyDict(dict):
-
     """Lazy dictionary with key -> value mappings.
 
     The actual mappings are loaded from the source YAML file when they
@@ -220,7 +219,6 @@ class LazyDict(dict):
 
 
 class LazyDict_JSON(LazyDict):
-
     """JSON lazy dictionary"""
 
     def parse(self, fileobj):
@@ -228,7 +226,6 @@ class LazyDict_JSON(LazyDict):
 
 
 class LazyDict_YAML_UltraLite(LazyDict):
-
     """'YAML Ultra Lite' lazy dictionary
 
     YAML Ultra Lite is a restricted subset of YAML. It only supports the
@@ -310,7 +307,7 @@ class LazyDict_YAML_UltraLite(LazyDict):
                     comment_offset = token.find("#")
                     if (
                         comment_offset > -1
-                        and token[comment_offset - 1: comment_offset] == " "
+                        and token[comment_offset - 1 : comment_offset] == " "
                     ):
                         token = token[:comment_offset].rstrip(" \n")
                         if not token:
@@ -357,7 +354,6 @@ class LazyDict_YAML_UltraLite(LazyDict):
 
 
 class LazyDict_YAML_Lite(LazyDict_YAML_UltraLite):
-
     """'YAML Lite' lazy dictionary
 
     YAML Lite is a restricted subset of YAML. It only supports the
@@ -523,7 +519,7 @@ class LazyDict_YAML_Lite(LazyDict_YAML_UltraLite):
                         comment_offset = token_rstrip.find("#")
                         if (
                             comment_offset > -1
-                            and token_rstrip[comment_offset - 1: comment_offset] == " "
+                            and token_rstrip[comment_offset - 1 : comment_offset] == " "
                         ):
                             token_rstrip = token_rstrip[:comment_offset].rstrip()
                     token_rstrip += "\n"

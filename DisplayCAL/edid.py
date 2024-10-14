@@ -264,7 +264,8 @@ def get_manufacturer_name(manufacturer_id):
         ]  # fallback gnome-desktop
         if sys.platform in ("darwin", "win32"):
             paths.append(os.path.join(config.pydir, "pnp.ids"))  # fallback
-            paths.append(os.path.join(config.pydir, "DisplayCAL", "pnp.ids"))  # fallback for tests
+            # fallback for tests
+            paths.append(os.path.join(config.pydir, "DisplayCAL", "pnp.ids"))
         for path in paths:
             if os.path.isfile(path):
                 try:
@@ -443,8 +444,8 @@ def parse_edid(edid):
         elif block[BLOCK_TYPE] == BLOCK_TYPE_COLOR_MANAGEMENT_DATA:
             # TODO: Implement? How could it be used?
             result["color_management_data"] = block[
-                                              BLOCK_CONTENTS[0] : BLOCK_CONTENTS[1]
-                                              ]
+                BLOCK_CONTENTS[0] : BLOCK_CONTENTS[1]
+            ]
 
     result["ext_flag"] = edid[EXTENSION_FLAG]
     result["checksum"] = edid[CHECKSUM]

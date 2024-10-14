@@ -350,9 +350,7 @@ def check_create_dir(path):
         try:
             os.makedirs(path)
         except Exception as exception:
-            return Error(
-                f"{lang.getstr('error.dir_creation', path)}\n\n{exception}"
-            )
+            return Error(f"{lang.getstr('error.dir_creation', path)}\n\n{exception}")
     if not os.path.isdir(path):
         return Error(lang.getstr("error.dir_notdir", path))
     return True
@@ -678,7 +676,7 @@ def create_shaper_curves(
     B_Z = []
     XYZbp = None
     XYZwp = None
-    for (R, G, B) in RGB_XYZ:
+    for R, G, B in RGB_XYZ:
         X, Y, Z = RGB_XYZ[(R, G, B)]
         X, Y, Z = colormath.adapt(X, Y, Z, RGB_XYZ[(100, 100, 100)], cat=cat)
         if 100 > R > 0 and min(X, Y, Z) < 100.0 / 65535:
@@ -1110,11 +1108,13 @@ def get_argyll_latest_version():
     try:
         changelog = re.search(
             r"(?<=Version ).{5}",
-            urllib.request.urlopen(f"{argyll_domain}/log.txt").read(150).decode("utf-8")
+            urllib.request.urlopen(f"{argyll_domain}/log.txt")
+            .read(150)
+            .decode("utf-8"),
         )
     except urllib.error.URLError as e:
         # no internet connection
-        # return the default version
+        # return the default version
         return config.defaults.get("argyll.version")
     return changelog.group()
 
@@ -7007,7 +7007,7 @@ BEGIN_DATA
                 if sys.platform == "win32":
                     # FIX: stdio cp1252 vs utf-8 (cp65001) issue under Windows 10/11+
                     # os.environ["PYTHONLEGACYWINDOWSSTDIO"] = "1"
-                    kwargs["codepage"] = windll.kernel32.GetACP() #1252  # 65001 if capture_output else 1252
+                    kwargs["codepage"] = windll.kernel32.GetACP()
                     # As Windows' console always hard wraps at the
                     # rightmost column, increase the buffer width
                     kwargs["columns"] = 160
@@ -12082,7 +12082,7 @@ usage: spotread [-options] [logfile]
 
                     if not bpc:
                         XYZbp = None
-                        for (R, G, B) in RGB_XYZ:
+                        for R, G, B in RGB_XYZ:
                             X, Y, Z = RGB_XYZ[(R, G, B)]
                             if R == G == B == 0:
                                 XYZbp = [v / 100 for v in (X, Y, Z)]
@@ -16349,9 +16349,7 @@ BEGIN_DATA
         download_path = os.path.join(download_dir, filename)
         response = None
         hashes = None
-        is_main_dl = (
-            uri.startswith(f"https://{DOMAIN}/download/")
-        )
+        is_main_dl = uri.startswith(f"https://{DOMAIN}/download/")
         if is_main_dl:
             # Always force connection to server even if local file exists for
             # displaycal.net/downloads/* and displaycal.net/Argyll/*

@@ -70,7 +70,6 @@ def nicenum(x, do_round):
 
 
 class CCXXPlot(wx.Frame):
-
     """CCMX/CCSS plot and information"""
 
     def __init__(self, parent, cgats, worker=None):
@@ -357,7 +356,7 @@ class CCXXPlot(wx.Frame):
             fit_method = cgats.queryv1("FIT_METHOD")
             if fit_method == b"xy":
                 # If the .ccmx does not contain this value,
-                # the graph will still draw
+                # the graph will still draw
                 fit_method = lang.getstr("ccmx.use_four_color_matrix_method")
             elif fit_method:
                 fit_method = lang.getstr("perceptual")

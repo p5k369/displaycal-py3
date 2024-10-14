@@ -415,7 +415,6 @@ class BetterTimerEvent(wx.PyCommandEvent):
 
 
 class BetterTimer(wx.Timer):
-
     """A wx.Timer replacement.
 
     Doing GUI updates using regular timers can be incredibly segfaulty under
@@ -450,7 +449,6 @@ class BetterCallLater(wx.CallLater):
 
 
 class ThreadedTimer(object):
-
     """A wx.Timer replacement that uses threads instead of actual timers
     which are a limited resource"""
 
@@ -564,7 +562,6 @@ class ThreadedCallLater(ThreadedTimer):
 
 
 class BetterWindowDisabler(object):
-
     """Also disables child windows instead of only top level windows. This is
     actually needed under Mac OS X where disabling a top level window will
     not prevent interaction with its children.
@@ -750,7 +747,6 @@ class PopupMenu(object):
 
     def SetMenuLabel(self, pos, label):
         self._menus[pos] = (self._menus[pos][0], label)
-
 
     def bind_keys(self):
         if sys.platform == "darwin":

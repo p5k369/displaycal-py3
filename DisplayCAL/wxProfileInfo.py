@@ -345,7 +345,7 @@ class GamutCanvas(LUTCanvas):
                                     xy3 = []
                                 else:
                                     xy3 = xy3[1:]
-                        xy2 = xy2[self.size:]
+                        xy2 = xy2[self.size :]
 
             # Add whitepoint
             x, y = coords[-1]
@@ -1459,8 +1459,14 @@ class ProfileInfoFrame(LUTFrame):
             )
             for key, name, _volume in gamuts:
                 try:
-                    gamut_coverage = profile.tags.meta.getvalue(f"GAMUT_coverage({key})")
-                    gamut_coverage = float(gamut_coverage) if gamut_coverage is not None else gamut_coverage
+                    gamut_coverage = profile.tags.meta.getvalue(
+                        f"GAMUT_coverage({key})"
+                    )
+                    gamut_coverage = (
+                        float(gamut_coverage)
+                        if gamut_coverage is not None
+                        else gamut_coverage
+                    )
                 except (TypeError, ValueError):
                     traceback.print_exc()
                     gamut_coverage = None

@@ -581,17 +581,17 @@ def create_synthetic_clut_profile(
     Xr, Yr, Zr = colormath.adapt(
         *colormath.RGB2XYZ(1, 0, 0, rgb_space=rgb_space),
         whitepoint_source=rgb_space[1],
-        cat=cat
+        cat=cat,
     )
     Xg, Yg, Zg = colormath.adapt(
         *colormath.RGB2XYZ(0, 1, 0, rgb_space=rgb_space),
         whitepoint_source=rgb_space[1],
-        cat=cat
+        cat=cat,
     )
     Xb, Yb, Zb = colormath.adapt(
         *colormath.RGB2XYZ(0, 0, 1, rgb_space=rgb_space),
         whitepoint_source=rgb_space[1],
-        cat=cat
+        cat=cat,
     )
     m1 = colormath.Matrix3x3(((Xr, Xg, Xb), (Yr, Yg, Yb), (Zr, Zg, Zb))).inverted()
     scale = 1 + (32767 / 32768.0)
@@ -664,7 +664,7 @@ def create_synthetic_clut_profile(
                         *[v * step * maxi for v in (R, G, B)], rgb_space=rgb_space
                     ),
                     whitepoint_source=rgb_space[1],
-                    cat=cat
+                    cat=cat,
                 )
                 X, Y, Z = colormath.blend_blackpoint(X, Y, Z, None, XYZbp)
                 itable.clut[-1].append([max(v / white_Y * 32768, 0) for v in (X, Y, Z)])
@@ -885,17 +885,17 @@ def create_synthetic_hdr_clut_profile(
         Xr, Yr, Zr = colormath.adapt(
             *colormath.RGB2XYZ(1, 0, 0, rgb_space=rgb_space),
             whitepoint_source=rgb_space[1],
-            cat=cat
+            cat=cat,
         )
         Xg, Yg, Zg = colormath.adapt(
             *colormath.RGB2XYZ(0, 1, 0, rgb_space=rgb_space),
             whitepoint_source=rgb_space[1],
-            cat=cat
+            cat=cat,
         )
         Xb, Yb, Zb = colormath.adapt(
             *colormath.RGB2XYZ(0, 0, 1, rgb_space=rgb_space),
             whitepoint_source=rgb_space[1],
-            cat=cat
+            cat=cat,
         )
         m1 = colormath.Matrix3x3(((Xr, Xg, Xb), (Yr, Yg, Yb), (Zr, Zg, Zb)))
         m2 = m1.inverted()
@@ -1517,7 +1517,7 @@ def create_synthetic_hdr_clut_profile(
                 *XYZc,
                 whitepoint_source=content_rgb_space[1],
                 whitepoint_destination=rgb_space[1],
-                cat=cat
+                cat=cat,
             )
             RGBc_r2020 = colormath.XYZ2RGB(
                 *XYZc, rgb_space=rgb_space, oetf=eotf_inverse
@@ -1538,7 +1538,7 @@ def create_synthetic_hdr_clut_profile(
                     *XYZc_r2020,
                     whitepoint_source=rgb_space[1],
                     whitepoint_destination=IPT_white_XYZ,
-                    cat=cat
+                    cat=cat,
                 )
                 I, CP, CT = colormath.XYZ2IPT(*XYZc_r2020)
                 L, C, H = colormath.Lab2LCHab(I * 100, CP * 100, CT * 100)
@@ -1948,7 +1948,12 @@ def _colord_get_display_profile(display_no=0, path_only=False, use_cache=True):
             dife(edid_, omit_manufacturer=True),
             dife(edid_, truncate_edid_strings=True, omit_manufacturer=True),
             dife(edid_, use_serial_32=False, omit_manufacturer=True),
-            dife(edid_, use_serial_32=False, truncate_edid_strings=True, omit_manufacturer=True,),
+            dife(
+                edid_,
+                use_serial_32=False,
+                truncate_edid_strings=True,
+                omit_manufacturer=True,
+            ),
         ]
     else:
         # Fall back to XrandR name
@@ -2690,7 +2695,7 @@ def _mp_hdr_tonemap(
                 X_D50, Y_D50, Z_D50 = colormath.adapt(
                     *(v / maxv for v in (X, Y, Z)),
                     whitepoint_source=rgb_space[1],
-                    cat=cat
+                    cat=cat,
                 )
                 negative_clip = min(X_D50, Y_D50, Z_D50) < 0
                 positive_clip = (
@@ -2735,7 +2740,7 @@ def _mp_hdr_tonemap(
                 X_D50, Y_D50, Z_D50 = colormath.adapt(
                     *(v / maxv for v in (X, Y, Z)),
                     whitepoint_source=rgb_space[1],
-                    cat=cat
+                    cat=cat,
                 )
                 print(
                     "Reached iteration limit, XYZ %.4f %.4f %.4f -> %.4f %.4f %.4f"
@@ -2884,7 +2889,6 @@ def videoCardGamma(tagData, tagSignature):
 
 
 class CRInterpolation(object):
-
     """Catmull-Rom interpolation.
     Curve passes through the points exactly, with neighbouring points influencing curvature.
     points[] should be at least 3 points long.
@@ -5884,9 +5888,11 @@ class NamedColor2Value(object):
             # L* range 0..100 + (25500 / 65280.0)
             # a, b range range -128..127 + (255 / 256.0)
             self.device = tuple(
-                v / 65536.0 * 256 / 255.0 * 100
-                if i == 0
-                else -128 + (v / 65536.0 * 256)
+                (
+                    v / 65536.0 * 256 / 255.0 * 100
+                    if i == 0
+                    else -128 + (v / 65536.0 * 256)
+                )
                 for i, v in enumerate(deviceCoords)
             )
         elif device == "XYZ":
@@ -6262,7 +6268,7 @@ class ICCProfile(object):
                             else:
                                 XYZ = colormath.adapt(
                                     *XYZ,
-                                    whitepoint_source=list(self.tags.wtpt.values())
+                                    whitepoint_source=list(self.tags.wtpt.values()),
                                 )
                                 tag_name = color[0].lower().decode() + "XYZ"
                             tag = self.tags[tag_name] = XYZType(profile=self)
@@ -6504,12 +6510,16 @@ class ICCProfile(object):
         header.extend(
             [
                 uInt32Number_tohex(flags),
-                self.device["manufacturer"][:4].rjust(4, b"\0")
-                if self.device["manufacturer"]
-                else b"\0" * 4,
-                self.device["model"][:4].rjust(4, b"\0")
-                if self.device["model"]
-                else b"\0" * 4,
+                (
+                    self.device["manufacturer"][:4].rjust(4, b"\0")
+                    if self.device["manufacturer"]
+                    else b"\0" * 4
+                ),
+                (
+                    self.device["model"][:4].rjust(4, b"\0")
+                    if self.device["model"]
+                    else b"\0" * 4
+                ),
             ]
         )
         deviceAttributes = 0
@@ -7757,9 +7767,9 @@ class ICCProfile(object):
                         info["    Channel %i maximum" % (i + 1)] = "%6.2f%%" % (
                             vmax / scale * 100
                         )
-                        info[
-                            "    Channel %i unique values" % (i + 1)
-                        ] = "%i @ 8 Bit" % len(unique[i])
+                        info["    Channel %i unique values" % (i + 1)] = (
+                            "%i @ 8 Bit" % len(unique[i])
+                        )
                         info["    Channel %i is linear" % (i + 1)] = {True: "Yes"}.get(
                             points[i] == linear_points, "No"
                         )

@@ -519,7 +519,7 @@ def get_argyll_data_dir():
     if isinstance(argyll_version, str):
         argyll_version = list(map(int, argyll_version.split(".")))
 
-    if  argyll_version < [1, 5, 0]:
+    if argyll_version < [1, 5, 0]:
         argyll_data_dirname = "color"
     else:
         argyll_data_dirname = "ArgyllCMS"
@@ -700,9 +700,7 @@ def get_data_path(relpath, rex=None):
                 try:
                     filelist = listdir_re(curpath, rex)
                 except Exception as exception:
-                    print(
-                        f"Error - directory '{curpath}' listing failed: {exception}"
-                    )
+                    print(f"Error - directory '{curpath}' listing failed: {exception}")
                 else:
                     for filename in filelist:
                         if filename not in intersection:
@@ -1202,11 +1200,11 @@ defaults = {
     "profile.black_point_compensation": 0 if sys.platform != "darwin" else 1,
     "profile.black_point_correction": 0.0,
     "profile.create_gamut_views": 1,
-    "profile.install_scope": "l"
-    if (sys.platform != "win32" and os.geteuid() == 0)  # or
-    # (sys.platform == "win32" and
-    # sys.getwindowsversion() >= (6, ))
-    else "u",  # Linux, OSX
+    "profile.install_scope": (
+        "l"
+        if (sys.platform != "win32" and os.geteuid() == 0)
+        else "u"  # Linux, OSX
+    ),
     "profile.license": "Public Domain",
     "profile.load_on_login": 1,
     "profile.name": "_".join(

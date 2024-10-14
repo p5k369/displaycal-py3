@@ -1473,10 +1473,10 @@ class LUTFrame(BaseFrame):
                         if i:
                             i -= 1
                         if i + 2 < mono_end:
-                            mono[j][
-                                i:mono_end
-                            ] = colormath.make_monotonically_increasing(
-                                values[i:mono_end]
+                            mono[j][i:mono_end] = (
+                                colormath.make_monotonically_increasing(
+                                    values[i:mono_end]
+                                )
                             )
                     odata = []
                     for i in range(len(mono[0])):

@@ -32,7 +32,7 @@ def encode_multipart_formdata(fields, files, charset="UTF-8"):
     BOUNDARY = b"----=_NextPart_" + uuid.uuid1().bytes
     CRLF = b"\r\n"
     L = []
-    for (key, value) in fields:
+    for key, value in fields:
         if isinstance(key, str):
             key = key.encode(charset)
         if isinstance(value, str):
@@ -44,7 +44,7 @@ def encode_multipart_formdata(fields, files, charset="UTF-8"):
         L.append(b"")
         L.append(value)
 
-    for (key, filename, value) in files:
+    for key, filename, value in files:
         if isinstance(key, str):
             key = key.encode(charset)
         if isinstance(filename, str):
@@ -54,7 +54,11 @@ def encode_multipart_formdata(fields, files, charset="UTF-8"):
 
         L.append(b"--" + BOUNDARY)
         L.append(
-            b'Content-Disposition: form-data; name="' + key + b'"; filename="' + filename + b'"'
+            b'Content-Disposition: form-data; name="'
+            + key
+            + b'"; filename="'
+            + filename
+            + b'"'
         )
         L.append(b"Content-Type: " + get_content_type(filename).encode(charset))
         L.append(b"")
