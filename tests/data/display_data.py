@@ -58,7 +58,7 @@ class DisplayData:
         "green_y": 0.7197265625,
         "hash": "40cf706d53476076b828fb8a78af796d",
         "header": b"\x00\xff\xff\xff\xff\xff\xff\x00",
-        "manufacturer": "Dell Inc.",
+        "manufacturer": "Dell, Inc.",
         "manufacturer_id": "DEL",
         "max_h_size_cm": 55,
         "max_v_size_cm": 31,
