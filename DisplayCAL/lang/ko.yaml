@@ -1939,6 +1939,8 @@
   %Y	Year with century
 "profile.no_embedded_ti3": |-
   프로파일이 Argyll 과 호환되는 측정 데이터를 가지고 있지 않습니다.
+"*profile.no_targ": |-
+  The profile does not contain target information.
 "profile.no_vcgt": |-
   프로파일이 캘리브레이션 곡선을 가지고 있지 않습니다.
 "*profile.only_named_color": |-

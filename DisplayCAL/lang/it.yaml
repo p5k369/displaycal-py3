@@ -1939,6 +1939,8 @@
   %Y	Year with century
 "profile.no_embedded_ti3": |-
   Il profilo non contiene dati di misurazione compatibili con Argyll.
+"*profile.no_targ": |-
+  The profile does not contain target information.
 "*profile.no_vcgt": |-
   The profile does not contain calibration curves.
 "*profile.only_named_color": |-

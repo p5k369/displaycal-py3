@@ -1938,6 +1938,8 @@
   %Y	 год с веком
 "profile.no_embedded_ti3": |-
   Профиль не содержит данных измерений, совместимых с Argyll.
+"*profile.no_targ": |-
+  The profile does not contain target information.
 "profile.no_vcgt": |-
   Профиль не содержит калибровочных кривых VCGT.
 "profile.only_named_color": |-

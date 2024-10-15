@@ -1938,6 +1938,8 @@
   %Y	Año con el siglo
 "profile.no_embedded_ti3": |-
   El perfil no contiene datos de medicion compatibles con Argyll.
+"*profile.no_targ": |-
+  The profile does not contain target information.
 "profile.no_vcgt": |-
   El perfil no contiene curvas de calibracion.
 "*profile.only_named_color": |-

@@ -17665,9 +17665,10 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
     def load_cal_handler(
         self, event, path=None, update_profile_name=True, silent=False, load_vcgt=True
     ):
-        """Load settings and calibration"""
+        """Load settings and calibration."""
         if not check_set_argyll_bin():
             return
+
         if path is None:
             wildcard = lang.getstr("filetype.cal_icc") + "|*.cal;*.icc;*.icm"
             sevenzip = get_program_file("7z", "7-zip")
@@ -17687,954 +17688,975 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
             if dlg.ShowModal() == wx.ID_OK:
                 path = dlg.GetPath()
             dlg.Destroy()
-        if path:
-            if getcfg("settings.changed") and not self.settings_confirm_discard():
-                return
-            if not os.path.exists(path):
-                sel = self.calibration_file_ctrl.GetSelection()
-                if len(self.recent_cals) > sel and self.recent_cals[sel] == path:
-                    self.recent_cals.remove(self.recent_cals[sel])
-                    recent_cals = []
-                    for recent_cal in self.recent_cals:
-                        if recent_cal not in self.presets:
-                            recent_cals.append(recent_cal)
-                    setcfg("recent_cals", os.pathsep.join(recent_cals))
-                    self.calibration_file_ctrl.Delete(sel)
-                    cal = getcfg("calibration.file", False) or ""
-                    if cal not in self.recent_cals:
-                        self.recent_cals.append(cal)
-                    # The case-sensitive index could fail because of
-                    # case insensitive file systems, e.g. if the
-                    # stored filename string is
-                    # "C:\Users\Name\AppData\DisplayCAL\storage\MyFile"
-                    # but the actual filename is
-                    # "C:\Users\Name\AppData\DisplayCAL\storage\myfile"
-                    # (maybe because the user renamed the file)
-                    idx = index_fallback_ignorecase(self.recent_cals, cal)
-                    self.calibration_file_ctrl.SetSelection(idx)
+
+        if not path:
+            return
+
+        if getcfg("settings.changed") and not self.settings_confirm_discard():
+            return
+
+        print(f"path                : {path}")
+        print(f"os.path.exists(path): {os.path.exists(path)}")
+
+        if not os.path.exists(path):
+            sel = self.calibration_file_ctrl.GetSelection()
+            if len(self.recent_cals) > sel and self.recent_cals[sel] == path:
+                self.recent_cals.remove(self.recent_cals[sel])
+                recent_cals = []
+                for recent_cal in self.recent_cals:
+                    if recent_cal not in self.presets:
+                        recent_cals.append(recent_cal)
+                setcfg("recent_cals", os.pathsep.join(recent_cals))
+                self.calibration_file_ctrl.Delete(sel)
+                cal = getcfg("calibration.file", False) or ""
+                if cal not in self.recent_cals:
+                    self.recent_cals.append(cal)
+                # The case-sensitive index could fail because of
+                # case insensitive file systems, e.g. if the
+                # stored filename string is
+                # "C:\Users\Name\AppData\DisplayCAL\storage\MyFile"
+                # but the actual filename is
+                # "C:\Users\Name\AppData\DisplayCAL\storage\myfile"
+                # (maybe because the user renamed the file)
+                idx = index_fallback_ignorecase(self.recent_cals, cal)
+                self.calibration_file_ctrl.SetSelection(idx)
+            InfoDialog(
+                self,
+                msg=lang.getstr("file.missing", path),
+                ok=lang.getstr("ok"),
+                bitmap=geticon(32, "dialog-error"),
+            )
+            return
+
+        is_preset = path in self.presets
+        basename = os.path.basename(path)
+        is_3dlut_preset = is_preset and basename.startswith("video_")
+
+        _, ext = os.path.splitext(path)
+        if ext.lower() in (".7z", ".tar.gz", ".tgz", ".zip"):
+            self.import_session_archive(path)
+            return
+
+        if ext.lower() in (".icc", ".icm"):
+            try:
+                profile = ICCP.ICCProfile(path)
+            except (IOError, ICCP.ICCProfileInvalidError):
                 InfoDialog(
                     self,
-                    msg=lang.getstr("file.missing", path),
+                    msg=lang.getstr("profile.invalid") + "\n" + path,
+                    ok=lang.getstr("ok"),
+                    bitmap=geticon(32, "dialog-error"),
+                )
+                return
+            if profile.profileClass != b"mntr" or profile.colorSpace != b"RGB":
+                InfoDialog(
+                    self,
+                    msg=lang.getstr(
+                        "profile.unsupported",
+                        (
+                            profile.profileClass.decode("utf-8"),
+                            profile.colorSpace.decode("utf-8")
+                        ),
+                    )
+                    + "\n"
+                    + path,
                     ok=lang.getstr("ok"),
                     bitmap=geticon(32, "dialog-error"),
                 )
                 return
 
-            is_preset = path in self.presets
-            basename = os.path.basename(path)
-            is_3dlut_preset = is_preset and basename.startswith("video_")
+            cied = profile.tags.get("CIED")
+            if cied:
+                cal = BytesIO(cied)
+            else:
+                targ = profile.tags.get("targ")
+                from DisplayCAL.ICCProfile import Text
 
-            filename, ext = os.path.splitext(path)
-            if ext.lower() in (".7z", ".tar.gz", ".tgz", ".zip"):
-                self.import_session_archive(path)
-                return
-            if ext.lower() in (".icc", ".icm"):
-                try:
-                    profile = ICCP.ICCProfile(path)
-                except (IOError, ICCP.ICCProfileInvalidError):
+                if targ and isinstance(targ, Text):
+                    tag_data = targ.tagData
+                    cal = BytesIO(tag_data)
+                else:
                     InfoDialog(
                         self,
-                        msg=lang.getstr("profile.invalid") + "\n" + path,
-                        ok=lang.getstr("ok"),
-                        bitmap=geticon(32, "dialog-error"),
-                    )
-                    return
-                if profile.profileClass != b"mntr" or profile.colorSpace != b"RGB":
-                    InfoDialog(
-                        self,
-                        msg=lang.getstr(
-                            "profile.unsupported",
-                            (profile.profileClass, profile.colorSpace),
-                        )
+                        msg=lang.getstr("profile.no_targ")
                         + "\n"
                         + path,
                         ok=lang.getstr("ok"),
                         bitmap=geticon(32, "dialog-error"),
                     )
                     return
+        else:
+            try:
+                cal = open(path, "rb")
+            except Exception:
+                InfoDialog(
+                    self,
+                    msg=lang.getstr("error.file.open", path),
+                    ok=lang.getstr("ok"),
+                    bitmap=geticon(32, "dialog-error"),
+                )
+                return
+        ti3_lines = [line.strip() for line in cal]
+        cal.close()
+        setcfg("last_cal_or_icc_path", path)
+        update_ccmx_items = True
+        set_size = True
+        display_match = False
+        display_changed = False
+        instrument_id = None
+        instrument_match = False
+        if ext.lower() in (".icc", ".icm"):
+            setcfg("last_icc_path", path)
+            if path not in self.presets:
+                setcfg("3dlut.output.profile", path)
+                setcfg("measurement_report.output_profile", path)
+            # Disable 3D LUT tab when switching from madVR / Resolve
+            setcfg("3dlut.tab.enable", 0)
+            setcfg("3dlut.tab.enable.backup", 0)
+            (options_dispcal, options_colprof) = get_options_from_profile(profile)
+            # Get and set the display
+            # First try to find the correct display by comparing
+            # the model (if present)
+            display_name = profile.getDeviceModelDescription()
+            # Second try to find the correct display by comparing
+            # the EDID hash (if present)
+            profile_tags_meta = profile.tags.get("meta", {})
+            edid_md5 = profile_tags_meta.get("EDID_md5", {}).get("value")
+            if display_name or edid_md5:
+                display_name_indexes = []
+                edid_md5_indexes = []
+                for i, edid in enumerate(self.worker.display_edid):
+                    if display_name in (
+                        edid.get(b"monitor_name", False),
+                        self.worker.display_names[i],
+                    ):
+                        display_name_indexes.append(i)
+                    if edid_md5 == edid.get(b"hash", False):
+                        edid_md5_indexes.append(i)
 
-                cied = profile.tags.get("CIED")
-                if cied:
-                    cal = BytesIO(cied)
-                else:
-                    targ = profile.tags.get("targ")
-                    from DisplayCAL.ICCProfile import Text
-
-                    if targ and isinstance(targ, Text):
-                        tag_data = targ.tagData
-                        cal = BytesIO(tag_data)
-            else:
-                try:
-                    cal = open(path, "rb")
-                except Exception:
-                    InfoDialog(
-                        self,
-                        msg=lang.getstr("error.file.open", path),
-                        ok=lang.getstr("ok"),
-                        bitmap=geticon(32, "dialog-error"),
+                if len(display_name_indexes) == 1:
+                    display_index = display_name_indexes[0]
+                    print(
+                        "Found display device matching model description at index #%i"
+                        % display_index
                     )
-                    return
-            ti3_lines = [line.strip() for line in cal]
-            cal.close()
-            setcfg("last_cal_or_icc_path", path)
-            update_ccmx_items = True
-            set_size = True
-            display_match = False
-            display_changed = False
-            instrument_id = None
-            instrument_match = False
-            if ext.lower() in (".icc", ".icm"):
-                setcfg("last_icc_path", path)
-                if path not in self.presets:
-                    setcfg("3dlut.output.profile", path)
-                    setcfg("measurement_report.output_profile", path)
-                # Disable 3D LUT tab when switching from madVR / Resolve
-                setcfg("3dlut.tab.enable", 0)
-                setcfg("3dlut.tab.enable.backup", 0)
-                (options_dispcal, options_colprof) = get_options_from_profile(profile)
-                # Get and set the display
-                # First try to find the correct display by comparing
-                # the model (if present)
-                display_name = profile.getDeviceModelDescription()
-                # Second try to find the correct display by comparing
-                # the EDID hash (if present)
-                profile_tags_meta = profile.tags.get("meta", {})
-                edid_md5 = profile_tags_meta.get("EDID_md5", {}).get("value")
-                if display_name or edid_md5:
-                    display_name_indexes = []
-                    edid_md5_indexes = []
-                    for i, edid in enumerate(self.worker.display_edid):
-                        if display_name in (
-                            edid.get(b"monitor_name", False),
-                            self.worker.display_names[i],
-                        ):
-                            display_name_indexes.append(i)
-                        if edid_md5 == edid.get(b"hash", False):
-                            edid_md5_indexes.append(i)
+                elif len(edid_md5_indexes) == 1:
+                    display_index = edid_md5_indexes[0]
+                    print(
+                        "Found display device matching EDID MD5 at index #%i"
+                        % display_index
+                    )
+                else:
+                    # We got several matches. As we can't be sure which
+                    # is the right one, do nothing.
+                    display_index = None
 
-                    if len(display_name_indexes) == 1:
-                        display_index = display_name_indexes[0]
-                        print(
-                            "Found display device matching model description at index #%i"
-                            % display_index
-                        )
-                    elif len(edid_md5_indexes) == 1:
-                        display_index = edid_md5_indexes[0]
-                        print(
-                            "Found display device matching EDID MD5 at index #%i"
-                            % display_index
-                        )
-                    else:
-                        # We got several matches. As we can't be sure which
-                        # is the right one, do nothing.
-                        display_index = None
+                if display_index is not None:
+                    # Found it
+                    display_match = True
+                    if config.get_display_name(
+                        None, False
+                    ) != config.get_display_name(display_index, False):
+                        # Only need to update if currently selected display
+                        # does not match found one
+                        setcfg("display.number", display_index + 1)
+                        self.get_set_display()
+                        display_changed = True
 
-                    if display_index is not None:
+                    if (
+                        config.is_virtual_display()
+                        or config.get_display_name() == "SII REPEATER"
+                    ):
+                        # Don't disable 3D LUT tab when switching from
+                        # madVR / Resolve / eeColor
+                        setcfg("3dlut.tab.enable", 1)
+                        setcfg("3dlut.tab.enable.backup", 1)
+            # Get and set the instrument
+            instrument_id = (
+                profile.tags.get("meta", {})
+                .get("MEASUREMENT_device", {})
+                .get("value")
+            )
+            if instrument_id:
+                for i, instrument in enumerate(self.worker.instruments):
+                    if instrument.lower() == instrument_id:
                         # Found it
-                        display_match = True
-                        if config.get_display_name(
-                            None, False
-                        ) != config.get_display_name(display_index, False):
-                            # Only need to update if currently selected display
-                            # does not match found one
-                            setcfg("display.number", display_index + 1)
-                            self.get_set_display()
-                            display_changed = True
-
+                        instrument_match = True
                         if (
-                            config.is_virtual_display()
-                            or config.get_display_name() == "SII REPEATER"
+                            self.worker.get_instrument_name().lower()
+                            == instrument_id
                         ):
-                            # Don't disable 3D LUT tab when switching from
-                            # madVR / Resolve / eeColor
-                            setcfg("3dlut.tab.enable", 1)
-                            setcfg("3dlut.tab.enable.backup", 1)
-                # Get and set the instrument
-                instrument_id = (
-                    profile.tags.get("meta", {})
-                    .get("MEASUREMENT_device", {})
-                    .get("value")
-                )
-                if instrument_id:
-                    for i, instrument in enumerate(self.worker.instruments):
-                        if instrument.lower() == instrument_id:
-                            # Found it
-                            instrument_match = True
-                            if (
-                                self.worker.get_instrument_name().lower()
-                                == instrument_id
-                            ):
-                                # No need to update anything
-                                break
-                            setcfg("comport.number", i + 1)
-                            self.update_comports()
-                            # No need to update ccmx items in update_controls,
-                            # as comport_ctrl_handler took care of it
-                            update_ccmx_items = False
-                            # comport_ctrl_handler already called set_size
-                            set_size = False
+                            # No need to update anything
                             break
-            else:
-                try:
-                    options_dispcal, options_colprof = get_options_from_cal(path)
-                except (IOError, CGATS.CGATSError):
-                    InfoDialog(
-                        self,
-                        msg="{}\n{}".format(
-                            lang.getstr("calibration.file.invalid"), path
-                        ),
-                        ok=lang.getstr("ok"),
-                        bitmap=geticon(32, "dialog-error"),
-                    )
-                    return
-            black_point_correction = False
-            if options_dispcal or options_colprof:
-                if debug:
-                    print("[D] options_dispcal:", options_dispcal)
-                if debug:
-                    print("[D] options_colprof:", options_colprof)
-                ccxxsetting = getcfg("colorimeter_correction_matrix_file").split(
-                    ":", 1
-                )[0]
-                ccmx = None
-                # Check if TRC was set
-                trc = False
-                if options_dispcal:
-                    for o in options_dispcal:
-                        if o[0:1] in ("g", "G"):
-                            trc = True
-                # Restore defaults
-                self.restore_defaults_handler(
-                    include=(
-                        "calibration",
-                        "drift_compensation",
-                        "measure.darken_background",
-                        "measure.override_min_display_update_delay_ms",
-                        "measure.min_display_update_delay_ms",
-                        "measure.override_display_settle_time_mult",
-                        "measure.display_settle_time_mult",
-                        "observer",
-                        "patterngenerator.ffp_insertion",
-                        "trc",
-                        "whitepoint",
+                        setcfg("comport.number", i + 1)
+                        self.update_comports()
+                        # No need to update ccmx items in update_controls,
+                        # as comport_ctrl_handler took care of it
+                        update_ccmx_items = False
+                        # comport_ctrl_handler already called set_size
+                        set_size = False
+                        break
+        else:
+            try:
+                options_dispcal, options_colprof = get_options_from_cal(path)
+            except (IOError, CGATS.CGATSError):
+                InfoDialog(
+                    self,
+                    msg="{}\n{}".format(
+                        lang.getstr("calibration.file.invalid"), path
                     ),
-                    exclude=(
-                        "calibration.black_point_correction_choice.show",
-                        "calibration.update",
-                        "calibration.use_video_lut",
-                        "measure.darken_background.show_warning",
-                        "patterngenerator.ffp_insertion.interval",
-                        "patterngenerator.ffp_insertion.duration",
-                        "patterngenerator.ffp_insertion.level",
-                        "trc.should_use_viewcond_adjust.show_msg",
-                    ),
-                    override={"trc": ""} if not trc else None,
+                    ok=lang.getstr("ok"),
+                    bitmap=geticon(32, "dialog-error"),
                 )
-                # Parse options
-                if options_dispcal:
-                    self.worker.options_dispcal = ["-" + arg for arg in options_dispcal]
-                    for o in options_dispcal:
-                        # TODO: Use a dictionary to map all the values to settings names
-                        if o[0:1] == "d" and o[1:] in ("web", "madvr"):
-                            # Special case web and madvr so it can be used in
-                            # preset templates which are TI3 files
-                            for i, display_name in enumerate(self.worker.display_names):
-                                if display_name.lower() == o[1:]:
-                                    # Found it
-                                    display_match = True
-                                    if getcfg("display.number") != i + 1:
-                                        setcfg("display.number", i + 1)
-                                        self.get_set_display()
-                                        display_changed = True
-                                    break
-                            continue
-                        if o[0:1] == "m":
-                            setcfg("calibration.interactive_display_adjustment", 0)
-                            continue
-                        # if o[0:1] == b"o":
-                        #     setcfg("profile.update", 1)
-                        #     continue
-                        # if o[0:1] == b"u":
-                        #     setcfg("calibration.update", 1)
-                        #     continue
-                        if o[0:1] == "q":
-                            setcfg("calibration.quality", o[1])
-                            continue
-                        if o[0:1] == "y" and getcfg("measurement_mode") != "auto":
-                            setcfg("measurement_mode", o[1])
-                            continue
-                        if o[0:1] in ("t", "T"):
-                            setcfg("whitepoint.colortemp.locus", o[0:1])
-                            if o[1:]:
-                                setcfg("whitepoint.colortemp", int(float(o[1:])))
-                            setcfg("whitepoint.x", None)
-                            setcfg("whitepoint.y", None)
-                            continue
-                        if o[0:1] == "w":
-                            o = o[1:].split(",")
-                            setcfg("whitepoint.colortemp", None)
-                            setcfg("whitepoint.x", o[0])
-                            setcfg("whitepoint.y", o[1])
-                            setcfg("3dlut.whitepoint.x", o[0])
-                            setcfg("3dlut.whitepoint.y", o[1])
-                            continue
-                        if o[0:1] == "b":
-                            setcfg("calibration.luminance", o[1:])
-                            continue
-                        if o[0:1] in ("g", "G"):
-                            setcfg("trc.type", o[0:1])
-                            setcfg("trc", o[1:])
-                            continue
-                        if o[0:1] == "f":
-                            setcfg("calibration.black_output_offset", o[1:])
-                            continue
-                        if o[0:1] == "a":
-                            try:
-                                ambient = float(o[1:])
-                            except ValueError:
-                                pass
-                            else:
-                                setcfg("calibration.ambient_viewcond_adjust", 1)
-                                # Argyll dispcal uses 20% of ambient (in lux,
-                                # fixed steradiant of 3.1415) as adapting
-                                # luminance, but we assume it already *is*
-                                # the adapting luminance. To correct for this,
-                                # scale so that dispcal gets the correct value.
-                                setcfg(
-                                    "calibration.ambient_viewcond_adjust.lux",
-                                    ambient / 5.0,
-                                )
-                            continue
-                        if o[0:1] == "k":
-                            if stripzeros(o[1:]) >= 0:
-                                black_point_correction = True
-                                setcfg("calibration.black_point_correction", o[1:])
-                            continue
-                        if o[0:1] == "A":
-                            setcfg("calibration.black_point_rate", o[1:])
-                            continue
-                        if o[0:1] == "B":
-                            setcfg("calibration.black_luminance", o[1:])
-                            continue
-                        if o[0:1] in ("p", "P") and len(o[1:]) >= 5:
-                            setcfg("dimensions.measureframe", o[1:])
-                            setcfg("dimensions.measureframe.unzoomed", o[1:])
-                            continue
-                        if o[0:1] == "V":
-                            setcfg("measurement_mode.adaptive", 1)
-                            continue
-                        if o[0:2] == "YA":
-                            setcfg("measurement_mode.adaptive", 0)
-                            continue
-                        if o[0:1] == "H":
-                            setcfg("measurement_mode.highres", 1)
-                            continue
-                        if o[0:1] == "p" and len(o[1:]) == 0:
-                            setcfg("measurement_mode.projector", 1)
-                            continue
-                        if o[0:1] == "F":
-                            setcfg("measure.darken_background", 1)
-                            continue
-                        if o[0:1] == "X":
-                            o = o.split(None, 1)
-                            ccmx = o[-1][1:-1]
-                            if not os.path.isabs(ccmx):
-                                ccmx = os.path.join(os.path.dirname(path), ccmx)
-                            # Need to update ccmx items again even if
-                            # comport_ctrl_handler already did
-                            update_ccmx_items = True
-                            continue
-                        if o[0:1] == "I":
-                            if "b" in o[1:]:
-                                setcfg("drift_compensation.blacklevel", 1)
-                            if "w" in o[1:]:
-                                setcfg("drift_compensation.whitelevel", 1)
-                            continue
-                        if o[0:1] == "Q":
-                            setcfg("observer", o[1:])
-                            # Need to update ccmx items again even if
-                            # comport_ctrl_handler already did because CCMX
-                            # observer may override calibration observer
-                            update_ccmx_items = True
-                            continue
-                        if o[0:1] == "E":
-                            setcfg("patterngenerator.use_video_levels", 1)
-                            self.update_output_levels_ctrl()
-                            continue
-                    if trc and not black_point_correction:
-                        setcfg("calibration.black_point_correction.auto", 1)
-                if getcfg("whitepoint.colortemp", False):
-                    # Color temperature
-                    if getcfg("whitepoint.colortemp.locus") == "T":
-                        # Planckian locus
-                        xyY = planckianCT2xyY(getcfg("whitepoint.colortemp"))
-                    else:
-                        # Daylight locus
-                        xyY = CIEDCCT2xyY(getcfg("whitepoint.colortemp"))
-                    # Update 3D LUT whitepoint target
-                    if xyY:
-                        setcfg("3dlut.whitepoint.x", xyY[0])
-                        setcfg("3dlut.whitepoint.y", xyY[1])
-                    else:
-                        setcfg("3dlut.whitepoint.x", None)
-                        setcfg("3dlut.whitepoint.y", None)
-                if not ccmx:
-                    ccxx = safe_glob(
-                        os.path.join(os.path.dirname(path), "*.ccmx")
-                    ) or safe_glob(os.path.join(os.path.dirname(path), "*.ccss"))
-                    if ccxx and len(ccxx) == 1:
-                        ccmx = ccxx[0]
-                        update_ccmx_items = True
-                if ccmx:
-                    setcfg(
-                        "colorimeter_correction_matrix_file",
-                        "%s:%s" % (ccxxsetting, ccmx),
-                    )
-                if options_colprof:
-                    # restore defaults
-                    self.restore_defaults_handler(
-                        include=(
-                            "profile",
-                            "gamap_",
-                            "3dlut.create",
-                            "3dlut.output.profile.apply_cal",
-                            "3dlut.trc",
-                            "testchart.auto_optimize",
-                            "testchart.patch_sequence",
-                        ),
-                        exclude=(
-                            "3dlut.tab.enable.backup",
-                            "profile.update",
-                            "profile.name",
-                            "gamap_default_intent",
-                        ),
-                    )
-                    for o in options_colprof:
-                        if o[0:1] == "q":
-                            setcfg("profile.quality", o[1])
-                            continue
-                        if o[0:1] == "b":
-                            setcfg("profile.quality.b2a", o[1] or "l")
-                            continue
-                        if o[0:1] == "a":
-                            if (
-                                is_preset
-                                and not is_3dlut_preset
-                                and sys.platform == "darwin"
-                            ):
-                                # Force profile type to single shaper + matrix
-                                # due to OS X bugs with cLUT profiles and
-                                # matrix profiles with individual shaper curves
-                                o = "aS"
-                                # Force black point compensation due to OS X
-                                # bugs with non BPC profiles
-                                setcfg("profile.black_point_compensation", 1)
-                            setcfg("profile.type", o[1])
-                            continue
-                        if o[0:1] in ("s", "S"):
-                            o = o.split(None, 1)
-                            setcfg("gamap_profile", o[-1][1:-1])
-                            setcfg("gamap_perceptual", 1)
-                            if o[0:1] == "S":
-                                setcfg("gamap_saturation", 1)
-                            continue
-                        if o[0:1] == "c":
-                            setcfg("gamap_src_viewcond", o[1:])
-                            continue
-                        if o[0:1] == "d":
-                            setcfg("gamap_out_viewcond", o[1:])
-                            continue
-                        if o[0:1] == "t":
-                            setcfg("gamap_perceptual_intent", o[1:])
-                            continue
-                        if o[0:1] == "T":
-                            setcfg("gamap_saturation_intent", o[1:])
-                            continue
-                setcfg("calibration.file", path)
-                if "CTI3" in ti3_lines:
-                    if debug:
-                        print("[D] load_cal_handler testchart.file:", path)
-                    setcfg("testchart.file", path)
-                if 'USE_BLACK_POINT_COMPENSATION "YES"' in ti3_lines:
-                    setcfg("profile.black_point_compensation", 1)
-                elif 'USE_BLACK_POINT_COMPENSATION "NO"' in ti3_lines and (
-                    sys.platform != "darwin" or not is_preset or is_3dlut_preset
-                ):
-                    # Only disable BPC if not OS X, or if a preset,
-                    # or if a 3D LUT preset
-                    setcfg("profile.black_point_compensation", 0)
-                if 'HIRES_B2A "YES"' in ti3_lines:
-                    setcfg("profile.b2a.hires", 1)
-                elif 'HIRES_B2A "NO"' in ti3_lines:
-                    setcfg("profile.b2a.hires", 0)
-                if 'SMOOTH_B2A "YES"' in ti3_lines:
-                    if 'HIRES_B2A "NO"' not in ti3_lines:
-                        setcfg("profile.b2a.hires", 1)
-                    setcfg("profile.b2a.hires.smooth", 1)
-                elif 'SMOOTH_B2A "NO"' in ti3_lines:
-                    if 'HIRES_B2A "YES"' not in ti3_lines:
-                        setcfg("profile.b2a.hires", 0)
-                    setcfg("profile.b2a.hires.smooth", 0)
-                simset = False  # Only HDR 3D LUTs will have this set
-                if "BEGIN_DATA_FORMAT" in ti3_lines:
-                    cfgend = ti3_lines.index(b"BEGIN_DATA_FORMAT")
-                    cfgpart = CGATS.CGATS(b"\n".join(ti3_lines[:cfgend]))
-                    lut3d_trc_set = False
-                    config_lut = {
-                        "SMOOTH_B2A_SIZE": "profile.b2a.hires.size",
-                        "HIRES_B2A_SIZE": "profile.b2a.hires.size",
-                        # NOTE that profile black point
-                        # correction is not the same
-                        # as calibration black point
-                        # correction!
-                        # See Worker.create_profile in
-                        # worker.py
-                        "BLACK_POINT_CORRECTION": "profile.black_point_correction",
-                        "MIN_DISPLAY_UPDATE_DELAY_MS": "measure.min_display_update_delay_ms",
-                        "DISPLAY_SETTLE_TIME_MULT": "measure.display_settle_time_mult",
-                        "FFP_INSERTION_INTERVAL": "patterngenerator.ffp_insertion.interval",
-                        "FFP_INSERTION_DURATION": "patterngenerator.ffp_insertion.duration",
-                        "FFP_INSERTION_LEVEL": "patterngenerator.ffp_insertion.level",
-                        "AUTO_OPTIMIZE": "testchart.auto_optimize",
-                        "PATCH_SEQUENCE": "testchart.patch_sequence",
-                        "3DLUT_SOURCE_PROFILE": "3dlut.input.profile",
-                        "3DLUT_TRC": "3dlut.trc",
-                        "3DLUT_HDR_PEAK_LUMINANCE": "3dlut.hdr_peak_luminance",
-                        "3DLUT_HDR_SAT": "3dlut.hdr_sat",
-                        "3DLUT_HDR_HUE": "3dlut.hdr_hue",
-                        "3DLUT_HDR_DISPLAY": "3dlut.hdr_display",
-                        # MaxCLL is no longer used, map to mastering display max light level (MaxMLL)
-                        "3DLUT_HDR_MAXCLL": "3dlut.hdr_maxmll",
-                        "3DLUT_HDR_MAXMLL": "3dlut.hdr_maxmll",
-                        "3DLUT_HDR_MAXMLL_ALT_CLIP": "3dlut.hdr_maxmll_alt_clip",
-                        "3DLUT_HDR_MINMLL": "3dlut.hdr_minmll",
-                        "3DLUT_HDR_AMBIENT_LUMINANCE": "3dlut.hdr_ambient_luminance",
-                        "3DLUT_GAMMA": "3dlut.trc_gamma",
-                        "3DLUT_DEGREE_OF_BLACK_OUTPUT_OFFSET": "3dlut.trc_output_offset",
-                        "3DLUT_INPUT_ENCODING": "3dlut.encoding.input",
-                        "3DLUT_OUTPUT_ENCODING": "3dlut.encoding.output",
-                        "3DLUT_GAMUT_MAPPING_MODE": "3dlut.gamap.use_b2a",
-                        "3DLUT_RENDERING_INTENT": "3dlut.rendering_intent",
-                        "3DLUT_FORMAT": "3dlut.format",
-                        "3DLUT_SIZE": "3dlut.size",
-                        "3DLUT_INPUT_BITDEPTH": "3dlut.bitdepth.input",
-                        "3DLUT_OUTPUT_BITDEPTH": "3dlut.bitdepth.output",
-                        "3DLUT_APPLY_CAL": "3dlut.output.profile.apply_cal",
-                        "SIMULATION_PROFILE": "measurement_report.simulation_profile",
-                    }
-                    for keyword in config_lut:
-                        cfgname = config_lut[keyword]
-                        cfgvalue = cfgpart.queryv1(keyword)
-                        if keyword in (
-                            "MIN_DISPLAY_UPDATE_DELAY_MS",
-                            "DISPLAY_SETTLE_TIME_MULT",
-                        ):
-                            backup = getcfg(
-                                "measure.override_%s.backup" % keyword.lower(), False
-                            )
-                            if (
-                                cfgvalue is not None
-                                and display_match
-                                and (instrument_match or not instrument_id)
-                            ):
-                                # Only set display update delay if a matching
-                                # display/instrument stored in profile meta
-                                # tag or no instrument ID (i.e. a preset)
-                                if backup is None:
-                                    setcfg(
-                                        "measure.override_%s.backup" % keyword.lower(),
-                                        getcfg("measure.override_" + keyword.lower()),
-                                    )
-                                    setcfg(
-                                        "measure.%s.backup" % keyword.lower(),
-                                        getcfg("measure." + keyword.lower()),
-                                    )
-                                setcfg("measure.override_" + keyword.lower(), 1)
-                            elif backup is not None:
-                                setcfg("measure.override_" + keyword.lower(), backup)
-                                cfgvalue = getcfg("measure.%s.backup" % keyword.lower())
-                                setcfg(
-                                    "measure.override_%s.backup" % keyword.lower(), None
-                                )
-                                setcfg("measure.%s.backup" % keyword.lower(), None)
-                        elif cfgvalue is not None:
-                            if keyword == "AUTO_OPTIMIZE" and cfgvalue:
-                                setcfg("testchart.file", "auto")
-                                if (
-                                    is_preset
-                                    and not is_3dlut_preset
-                                    and sys.platform == "darwin"
-                                ):
-                                    # Profile type forced to matrix due to
-                                    # OS X bugs with cLUT profiles. Set
-                                    # smallest testchart.
-                                    cfgvalue = 1
-                            elif keyword == "PATCH_SEQUENCE":
-                                cfgvalue = cfgvalue.lower().replace("_rgb_", "_RGB_")
-                            elif keyword == "3DLUT_GAMMA":
-                                try:
-                                    cfgvalue = float(cfgvalue)
-                                except Exception:
-                                    pass
-                                else:
-                                    if cfgvalue < 0:
-                                        gamma_type = "B"
-                                        cfgvalue = abs(cfgvalue)
-                                    else:
-                                        gamma_type = "b"
-                                    setcfg("3dlut.trc_gamma_type", gamma_type)
-                                    # Sync measurement report settings
-                                    setcfg(
-                                        "measurement_report.trc_gamma_type", gamma_type
-                                    )
-                                    setcfg("measurement_report.apply_black_offset", 0)
-                                    setcfg("measurement_report.apply_trc", 1)
-                            elif keyword == "3DLUT_GAMUT_MAPPING_MODE":
-                                if cfgvalue == "G":
-                                    cfgvalue = 0
-                                else:
-                                    cfgvalue = 1
-                            elif keyword in (
-                                "FFP_INSERTION_INTERVAL",
-                                "FFP_INSERTION_DURATION",
-                                "FFP_INSERTION_LEVEL",
-                            ):
-                                setcfg("patterngenerator.ffp_insertion", 1)
-                            if keyword.startswith("3DLUT"):
-                                setcfg("3dlut.create", 1)
-                                setcfg("3dlut.tab.enable", 1)
-                                setcfg("3dlut.tab.enable.backup", 1)
-                        if cfgvalue is not None:
-                            cfgvalue = str(cfgvalue)
-                            if cfgname.endswith("profile") and (
-                                not os.path.isabs(cfgvalue)
-                                or not os.path.isfile(cfgvalue)
-                            ):
-                                if os.path.basename(os.path.dirname(cfgvalue)) == "ref":
-                                    # Fall back to ref file if not absolute
-                                    # path or not found
-                                    cfgvalue = (
-                                        get_data_path(
-                                            "ref/" + os.path.basename(cfgvalue)
-                                        )
-                                        or cfgvalue
-                                    )
-                                elif not os.path.dirname(cfgvalue):
-                                    # Use profile dir
-                                    cfgvalue = os.path.join(
-                                        os.path.dirname(path), cfgvalue
-                                    )
-                            setcfg(cfgname, cfgvalue)
-                            if keyword == "SIMULATION_PROFILE":
-                                # Only HDR 3D LUTs will have this set
-                                simset = True
-                            # Sync measurement report settings
-                            if cfgname == "3dlut.input.profile":
-                                if not simset:
-                                    setcfg(
-                                        "measurement_report.simulation_profile",
-                                        cfgvalue,
-                                    )
-                                setcfg("measurement_report.use_simulation_profile", 1)
-                                setcfg(
-                                    "measurement_report.use_simulation_profile_as_output",
-                                    1,
-                                )
-                            elif cfgname in (
-                                "3dlut.trc_gamma",
-                                "3dlut.trc_output_offset",
-                            ):
-                                cfgname = cfgname.replace("3dlut", "measurement_report")
-                                setcfg(cfgname, cfgvalue)
-                            elif cfgname == "3dlut.format":
-                                if cfgvalue == "madVR" and not simset:
-                                    setcfg("3dlut.enable", 1)
-                                if (
-                                    cfgvalue == "madVR" and not simset
-                                ) or cfgvalue == "eeColor":
-                                    setcfg("measurement_report.use_devlink_profile", 0)
-                            elif cfgname == "3dlut.trc":
-                                lut3d_trc_set = True
-                    # Content color space (currently only used for HDR)
-                    for color in ("white", "red", "green", "blue"):
-                        for coord in "xy":
-                            keyword = "3DLUT_CONTENT_COLORSPACE_%s_%s" % (
-                                color.upper(),
-                                coord.upper(),
-                            )
-                            cfgvalue = cfgpart.queryv1(keyword)
-                            if cfgvalue is None:
-                                continue
-                            cfgvalue = str(cfgvalue)
-                            try:
-                                cfgvalue = round(float(cfgvalue), 4)
-                            except ValueError:
-                                pass
-                            setcfg(
-                                "3dlut.content.colorspace.%s.%s" % (color, coord),
-                                cfgvalue,
-                            )
-                    # Make sure 3D LUT TRC enumeration matches parameters for
-                    # older profiles not containing 3DLUT_TRC
-                    if not lut3d_trc_set:
-                        if (
-                            getcfg("3dlut.trc_gamma_type") == "B"
-                            and getcfg("3dlut.trc_output_offset") == 0
-                            and getcfg("3dlut.trc_gamma") == 2.4
-                        ):
-                            setcfg("3dlut.trc", "bt1886")  # BT.1886
-                        elif (
-                            getcfg("3dlut.trc_gamma_type") == "b"
-                            and getcfg("3dlut.trc_output_offset") == 1
-                            and getcfg("3dlut.trc_gamma") == 2.2
-                        ):
-                            setcfg("3dlut.trc", "gamma2.2")  # Pure power gamma 2.2
-                        else:
-                            setcfg("3dlut.trc", "customgamma")  # Custom
-                if not display_changed:
-                    self.update_menus()
-                    if not update_ccmx_items:
-                        self.update_estimated_measurement_time("cal")
-                self.lut3d_set_path()
-                if config.get_display_name() == "Resolve":
-                    setcfg("3dlut.enable", 0)
-                    setcfg("measurement_report.use_devlink_profile", 1)
-                elif config.get_display_name(None, True) == "Prisma":
-                    setcfg("3dlut.enable", 1)
-                    setcfg("measurement_report.use_devlink_profile", 0)
-                if getcfg("3dlut.format") == "madVR" and simset:
-                    # Currently, it is not possible to verify HDR 3D LUTs
-                    # through madVR in another way
-                    setcfg("3dlut.enable", 0)
-                    setcfg("measurement_report.use_devlink_profile", 1)
-                self.update_controls(
-                    update_profile_name=update_profile_name,
-                    update_ccmx_items=update_ccmx_items,
-                )
-                if set_size:
-                    self.set_size(True)
-                writecfg()
-
-                if ext.lower() in (".icc", ".icm"):
-                    if load_vcgt:
-                        # load calibration into lut
-                        self.load_cal(silent=True)
-                    if options_dispcal and options_colprof:
-                        return
-                    elif options_dispcal:
-                        msg = lang.getstr("settings_loaded.cal_and_lut")
-                    else:
-                        msg = lang.getstr("settings_loaded.profile_and_lut")
-                elif options_dispcal and options_colprof:
-                    msg = lang.getstr("settings_loaded.cal_and_profile")
-                elif options_dispcal:
-                    if not load_vcgt:
-                        msg = lang.getstr("settings_loaded.cal")
-                    else:
-                        # load calibration into lut
-                        self.load_cal(silent=True)
-                        msg = lang.getstr("settings_loaded.cal_and_lut")
-                else:
-                    msg = lang.getstr("settings_loaded.profile")
-
-                # if not silent:
-                # InfoDialog(self, msg=msg + "\n" + path, ok=lang.getstr("ok"),
-                # bitmap=geticon(32, "dialog-information"))
                 return
-            elif ext.lower() in (".icc", ".icm"):
-                sel = self.calibration_file_ctrl.GetSelection()
-                if len(self.recent_cals) > sel and self.recent_cals[sel] == path:
-                    self.recent_cals.remove(self.recent_cals[sel])
-                    self.calibration_file_ctrl.Delete(sel)
-                    cal = getcfg("calibration.file", False) or ""
-                    if cal not in self.recent_cals:
-                        self.recent_cals.append(cal)
-                    # The case-sensitive index could fail because of
-                    # case insensitive file systems, e.g. if the
-                    # stored filename string is
-                    # "C:\Users\Name\AppData\DisplayCAL\storage\MyFile"
-                    # but the actual filename is
-                    # "C:\Users\Name\AppData\DisplayCAL\storage\myfile"
-                    # (maybe because the user renamed the file)
-                    idx = index_fallback_ignorecase(self.recent_cals, cal)
-                    self.calibration_file_ctrl.SetSelection(idx)
-                if not silent:
-                    InfoDialog(
-                        self,
-                        msg=lang.getstr("no_settings") + "\n" + path,
-                        ok=lang.getstr("ok"),
-                        bitmap=geticon(32, "dialog-error"),
-                    )
-                return
-
-            # Old .cal file without ARGYLL_DISPCAL_ARGS section
-
-            setcfg("last_cal_path", path)
-
+        black_point_correction = False
+        if options_dispcal or options_colprof:
+            if debug:
+                print("[D] options_dispcal:", options_dispcal)
+            if debug:
+                print("[D] options_colprof:", options_colprof)
+            ccxxsetting = getcfg("colorimeter_correction_matrix_file").split(
+                ":", 1
+            )[0]
+            ccmx = None
+            # Check if TRC was set
+            trc = False
+            if options_dispcal:
+                for o in options_dispcal:
+                    if o[0:1] in ("g", "G"):
+                        trc = True
             # Restore defaults
             self.restore_defaults_handler(
                 include=(
                     "calibration",
-                    "profile.update",
+                    "drift_compensation",
+                    "measure.darken_background",
                     "measure.override_min_display_update_delay_ms",
                     "measure.min_display_update_delay_ms",
                     "measure.override_display_settle_time_mult",
                     "measure.display_settle_time_mult",
+                    "observer",
+                    "patterngenerator.ffp_insertion",
                     "trc",
                     "whitepoint",
                 ),
                 exclude=(
                     "calibration.black_point_correction_choice.show",
                     "calibration.update",
+                    "calibration.use_video_lut",
+                    "measure.darken_background.show_warning",
+                    "patterngenerator.ffp_insertion.interval",
+                    "patterngenerator.ffp_insertion.duration",
+                    "patterngenerator.ffp_insertion.level",
                     "trc.should_use_viewcond_adjust.show_msg",
                 ),
+                override={"trc": ""} if not trc else None,
             )
-
-            self.worker.options_dispcal = []
-            settings = []
-            for line in ti3_lines:
-                line = line.strip().split(b" ", 1)
-                if len(line) > 1:
-                    value = line[1][1:-1]  # strip quotes
-                    if line[0] == "DEVICE_CLASS":
-                        if value != "DISPLAY":
-                            InfoDialog(
-                                self,
-                                msg=lang.getstr("calibration.file.invalid")
-                                + "\n"
-                                + path,
-                                ok=lang.getstr("ok"),
-                                bitmap=geticon(32, "dialog-error"),
-                            )
-                            return
-                    elif line[0] == "DEVICE_TYPE":
-                        measurement_mode = value.lower()[0]
-                        if measurement_mode in ("c", "l"):
-                            setcfg("measurement_mode", measurement_mode)
-                            self.worker.options_dispcal.append("-y" + measurement_mode)
-                    elif line[0] == "NATIVE_TARGET_WHITE":
-                        setcfg("whitepoint.colortemp", None)
+            # Parse options
+            if options_dispcal:
+                self.worker.options_dispcal = ["-" + arg for arg in options_dispcal]
+                for o in options_dispcal:
+                    # TODO: Use a dictionary to map all the values to settings names
+                    if o[0:1] == "d" and o[1:] in ("web", "madvr"):
+                        # Special case web and madvr so it can be used in
+                        # preset templates which are TI3 files
+                        for i, display_name in enumerate(self.worker.display_names):
+                            if display_name.lower() == o[1:]:
+                                # Found it
+                                display_match = True
+                                if getcfg("display.number") != i + 1:
+                                    setcfg("display.number", i + 1)
+                                    self.get_set_display()
+                                    display_changed = True
+                                break
+                        continue
+                    if o[0:1] == "m":
+                        setcfg("calibration.interactive_display_adjustment", 0)
+                        continue
+                    # if o[0:1] == b"o":
+                    #     setcfg("profile.update", 1)
+                    #     continue
+                    # if o[0:1] == b"u":
+                    #     setcfg("calibration.update", 1)
+                    #     continue
+                    if o[0:1] == "q":
+                        setcfg("calibration.quality", o[1])
+                        continue
+                    if o[0:1] == "y" and getcfg("measurement_mode") != "auto":
+                        setcfg("measurement_mode", o[1])
+                        continue
+                    if o[0:1] in ("t", "T"):
+                        setcfg("whitepoint.colortemp.locus", o[0:1])
+                        if o[1:]:
+                            setcfg("whitepoint.colortemp", int(float(o[1:])))
                         setcfg("whitepoint.x", None)
                         setcfg("whitepoint.y", None)
-                        setcfg("3dlut.whitepoint.x", None)
-                        setcfg("3dlut.whitepoint.y", None)
-                        settings.append(lang.getstr("whitepoint"))
-                    elif line[0] == "TARGET_WHITE_XYZ":
-                        XYZ = value.split()
-                        i = 0
+                        continue
+                    if o[0:1] == "w":
+                        o = o[1:].split(",")
+                        setcfg("whitepoint.colortemp", None)
+                        setcfg("whitepoint.x", o[0])
+                        setcfg("whitepoint.y", o[1])
+                        setcfg("3dlut.whitepoint.x", o[0])
+                        setcfg("3dlut.whitepoint.y", o[1])
+                        continue
+                    if o[0:1] == "b":
+                        setcfg("calibration.luminance", o[1:])
+                        continue
+                    if o[0:1] in ("g", "G"):
+                        setcfg("trc.type", o[0:1])
+                        setcfg("trc", o[1:])
+                        continue
+                    if o[0:1] == "f":
+                        setcfg("calibration.black_output_offset", o[1:])
+                        continue
+                    if o[0:1] == "a":
                         try:
-                            for component in XYZ:
-                                # Normalize to 0.0 - 1.0
-                                XYZ[i] = float(component) / 100
-                                i += 1
+                            ambient = float(o[1:])
                         except ValueError:
-                            continue
-                        x, y, Y = XYZ2xyY(XYZ[0], XYZ[1], XYZ[2])
-                        XYZ2CCT(XYZ[0], XYZ[1], XYZ[2])
-                        if lang.getstr("whitepoint") not in settings:
-                            setcfg("whitepoint.colortemp", None)
-                            setcfg("whitepoint.x", round(x, 4))
-                            setcfg("whitepoint.y", round(y, 4))
-                            setcfg("3dlut.whitepoint.x", round(x, 4))
-                            setcfg("3dlut.whitepoint.y", round(y, 4))
-                            self.worker.options_dispcal.append(
-                                "-w%s,%s"
-                                % (getcfg("whitepoint.x"), getcfg("whitepoint.y"))
-                            )
-                            settings.append(lang.getstr("whitepoint"))
-                        setcfg("calibration.luminance", stripzeros(round(Y * 100, 3)))
-                        self.worker.options_dispcal.append(
-                            "-b%s" % getcfg("calibration.luminance")
-                        )
-                        settings.append(lang.getstr("calibration.luminance"))
-                    elif line[0] == "TARGET_GAMMA":
-                        setcfg("trc", None)
-                        if value in ("L_STAR", "REC709", "SMPTE240M", "sRGB"):
-                            setcfg("trc.type", "g")
-                        if value == "L_STAR":
-                            setcfg("trc", "l")
-                        elif value == "REC709":
-                            setcfg("trc", "709")
-                        elif value == "SMPTE240M":
-                            setcfg("trc", "240")
-                        elif value == "sRGB":
-                            setcfg("trc", "s")
+                            pass
                         else:
-                            try:
-                                value = stripzeros(value)
-                                if float(value) < 0:
-                                    setcfg("trc.type", "G")
-                                    value = abs(value)
-                                else:
-                                    setcfg("trc.type", "g")
-                                setcfg("trc", value)
-                            except ValueError:
-                                continue
-                        self.worker.options_dispcal.append(
-                            "-" + getcfg("trc.type") + str(getcfg("trc"))
-                        )
-                        settings.append(lang.getstr("trc"))
-                    elif line[0] == "DEGREE_OF_BLACK_OUTPUT_OFFSET":
-                        setcfg("calibration.black_output_offset", stripzeros(value))
-                        self.worker.options_dispcal.append(
-                            "-f%s" % getcfg("calibration.black_output_offset")
-                        )
-                        settings.append(lang.getstr("calibration.black_output_offset"))
-                    elif line[0] == "BLACK_POINT_CORRECTION":
-                        if stripzeros(value) >= 0:
-                            black_point_correction = True
+                            setcfg("calibration.ambient_viewcond_adjust", 1)
+                            # Argyll dispcal uses 20% of ambient (in lux,
+                            # fixed steradiant of 3.1415) as adapting
+                            # luminance, but we assume it already *is*
+                            # the adapting luminance. To correct for this,
+                            # scale so that dispcal gets the correct value.
                             setcfg(
-                                "calibration.black_point_correction", stripzeros(value)
+                                "calibration.ambient_viewcond_adjust.lux",
+                                ambient / 5.0,
                             )
-                            self.worker.options_dispcal.append(
-                                "-k%s" % getcfg("calibration.black_point_correction")
-                            )
-                        settings.append(
-                            lang.getstr("calibration.black_point_correction")
-                        )
-                    elif line[0] == "TARGET_BLACK_BRIGHTNESS":
-                        setcfg("calibration.black_luminance", stripzeros(value))
-                        self.worker.options_dispcal.append(
-                            "-B%s" % getcfg("calibration.black_luminance")
-                        )
-                        settings.append(lang.getstr("calibration.black_luminance"))
-                    elif line[0] == "QUALITY":
-                        setcfg("calibration.quality", value.lower()[0])
-                        self.worker.options_dispcal.append(
-                            "-q" + getcfg("calibration.quality")
-                        )
-                        settings.append(lang.getstr("calibration.quality"))
-            if not black_point_correction:
-                setcfg("calibration.black_point_correction.auto", 1)
-
+                        continue
+                    if o[0:1] == "k":
+                        if stripzeros(o[1:]) >= 0:
+                            black_point_correction = True
+                            setcfg("calibration.black_point_correction", o[1:])
+                        continue
+                    if o[0:1] == "A":
+                        setcfg("calibration.black_point_rate", o[1:])
+                        continue
+                    if o[0:1] == "B":
+                        setcfg("calibration.black_luminance", o[1:])
+                        continue
+                    if o[0:1] in ("p", "P") and len(o[1:]) >= 5:
+                        setcfg("dimensions.measureframe", o[1:])
+                        setcfg("dimensions.measureframe.unzoomed", o[1:])
+                        continue
+                    if o[0:1] == "V":
+                        setcfg("measurement_mode.adaptive", 1)
+                        continue
+                    if o[0:2] == "YA":
+                        setcfg("measurement_mode.adaptive", 0)
+                        continue
+                    if o[0:1] == "H":
+                        setcfg("measurement_mode.highres", 1)
+                        continue
+                    if o[0:1] == "p" and len(o[1:]) == 0:
+                        setcfg("measurement_mode.projector", 1)
+                        continue
+                    if o[0:1] == "F":
+                        setcfg("measure.darken_background", 1)
+                        continue
+                    if o[0:1] == "X":
+                        o = o.split(None, 1)
+                        ccmx = o[-1][1:-1]
+                        if not os.path.isabs(ccmx):
+                            ccmx = os.path.join(os.path.dirname(path), ccmx)
+                        # Need to update ccmx items again even if
+                        # comport_ctrl_handler already did
+                        update_ccmx_items = True
+                        continue
+                    if o[0:1] == "I":
+                        if "b" in o[1:]:
+                            setcfg("drift_compensation.blacklevel", 1)
+                        if "w" in o[1:]:
+                            setcfg("drift_compensation.whitelevel", 1)
+                        continue
+                    if o[0:1] == "Q":
+                        setcfg("observer", o[1:])
+                        # Need to update ccmx items again even if
+                        # comport_ctrl_handler already did because CCMX
+                        # observer may override calibration observer
+                        update_ccmx_items = True
+                        continue
+                    if o[0:1] == "E":
+                        setcfg("patterngenerator.use_video_levels", 1)
+                        self.update_output_levels_ctrl()
+                        continue
+                if trc and not black_point_correction:
+                    setcfg("calibration.black_point_correction.auto", 1)
+            if getcfg("whitepoint.colortemp", False):
+                # Color temperature
+                if getcfg("whitepoint.colortemp.locus") == "T":
+                    # Planckian locus
+                    xyY = planckianCT2xyY(getcfg("whitepoint.colortemp"))
+                else:
+                    # Daylight locus
+                    xyY = CIEDCCT2xyY(getcfg("whitepoint.colortemp"))
+                # Update 3D LUT whitepoint target
+                if xyY:
+                    setcfg("3dlut.whitepoint.x", xyY[0])
+                    setcfg("3dlut.whitepoint.y", xyY[1])
+                else:
+                    setcfg("3dlut.whitepoint.x", None)
+                    setcfg("3dlut.whitepoint.y", None)
+            if not ccmx:
+                ccxx = safe_glob(
+                    os.path.join(os.path.dirname(path), "*.ccmx")
+                ) or safe_glob(os.path.join(os.path.dirname(path), "*.ccss"))
+                if ccxx and len(ccxx) == 1:
+                    ccmx = ccxx[0]
+                    update_ccmx_items = True
+            if ccmx:
+                setcfg(
+                    "colorimeter_correction_matrix_file",
+                    "%s:%s" % (ccxxsetting, ccmx),
+                )
+            if options_colprof:
+                # restore defaults
+                self.restore_defaults_handler(
+                    include=(
+                        "profile",
+                        "gamap_",
+                        "3dlut.create",
+                        "3dlut.output.profile.apply_cal",
+                        "3dlut.trc",
+                        "testchart.auto_optimize",
+                        "testchart.patch_sequence",
+                    ),
+                    exclude=(
+                        "3dlut.tab.enable.backup",
+                        "profile.update",
+                        "profile.name",
+                        "gamap_default_intent",
+                    ),
+                )
+                for o in options_colprof:
+                    if o[0:1] == "q":
+                        setcfg("profile.quality", o[1])
+                        continue
+                    if o[0:1] == "b":
+                        setcfg("profile.quality.b2a", o[1] or "l")
+                        continue
+                    if o[0:1] == "a":
+                        if (
+                            is_preset
+                            and not is_3dlut_preset
+                            and sys.platform == "darwin"
+                        ):
+                            # Force profile type to single shaper + matrix
+                            # due to OS X bugs with cLUT profiles and
+                            # matrix profiles with individual shaper curves
+                            o = "aS"
+                            # Force black point compensation due to OS X
+                            # bugs with non BPC profiles
+                            setcfg("profile.black_point_compensation", 1)
+                        setcfg("profile.type", o[1])
+                        continue
+                    if o[0:1] in ("s", "S"):
+                        o = o.split(None, 1)
+                        setcfg("gamap_profile", o[-1][1:-1])
+                        setcfg("gamap_perceptual", 1)
+                        if o[0:1] == "S":
+                            setcfg("gamap_saturation", 1)
+                        continue
+                    if o[0:1] == "c":
+                        setcfg("gamap_src_viewcond", o[1:])
+                        continue
+                    if o[0:1] == "d":
+                        setcfg("gamap_out_viewcond", o[1:])
+                        continue
+                    if o[0:1] == "t":
+                        setcfg("gamap_perceptual_intent", o[1:])
+                        continue
+                    if o[0:1] == "T":
+                        setcfg("gamap_saturation_intent", o[1:])
+                        continue
             setcfg("calibration.file", path)
-            self.update_controls(update_profile_name=update_profile_name)
             if "CTI3" in ti3_lines:
                 if debug:
                     print("[D] load_cal_handler testchart.file:", path)
                 setcfg("testchart.file", path)
+            if 'USE_BLACK_POINT_COMPENSATION "YES"' in ti3_lines:
+                setcfg("profile.black_point_compensation", 1)
+            elif 'USE_BLACK_POINT_COMPENSATION "NO"' in ti3_lines and (
+                sys.platform != "darwin" or not is_preset or is_3dlut_preset
+            ):
+                # Only disable BPC if not OS X, or if a preset,
+                # or if a 3D LUT preset
+                setcfg("profile.black_point_compensation", 0)
+            if 'HIRES_B2A "YES"' in ti3_lines:
+                setcfg("profile.b2a.hires", 1)
+            elif 'HIRES_B2A "NO"' in ti3_lines:
+                setcfg("profile.b2a.hires", 0)
+            if 'SMOOTH_B2A "YES"' in ti3_lines:
+                if 'HIRES_B2A "NO"' not in ti3_lines:
+                    setcfg("profile.b2a.hires", 1)
+                setcfg("profile.b2a.hires.smooth", 1)
+            elif 'SMOOTH_B2A "NO"' in ti3_lines:
+                if 'HIRES_B2A "YES"' not in ti3_lines:
+                    setcfg("profile.b2a.hires", 0)
+                setcfg("profile.b2a.hires.smooth", 0)
+            simset = False  # Only HDR 3D LUTs will have this set
+            if "BEGIN_DATA_FORMAT" in ti3_lines:
+                cfgend = ti3_lines.index(b"BEGIN_DATA_FORMAT")
+                cfgpart = CGATS.CGATS(b"\n".join(ti3_lines[:cfgend]))
+                lut3d_trc_set = False
+                config_lut = {
+                    "SMOOTH_B2A_SIZE": "profile.b2a.hires.size",
+                    "HIRES_B2A_SIZE": "profile.b2a.hires.size",
+                    # NOTE that profile black point
+                    # correction is not the same
+                    # as calibration black point
+                    # correction!
+                    # See Worker.create_profile in
+                    # worker.py
+                    "BLACK_POINT_CORRECTION": "profile.black_point_correction",
+                    "MIN_DISPLAY_UPDATE_DELAY_MS": "measure.min_display_update_delay_ms",
+                    "DISPLAY_SETTLE_TIME_MULT": "measure.display_settle_time_mult",
+                    "FFP_INSERTION_INTERVAL": "patterngenerator.ffp_insertion.interval",
+                    "FFP_INSERTION_DURATION": "patterngenerator.ffp_insertion.duration",
+                    "FFP_INSERTION_LEVEL": "patterngenerator.ffp_insertion.level",
+                    "AUTO_OPTIMIZE": "testchart.auto_optimize",
+                    "PATCH_SEQUENCE": "testchart.patch_sequence",
+                    "3DLUT_SOURCE_PROFILE": "3dlut.input.profile",
+                    "3DLUT_TRC": "3dlut.trc",
+                    "3DLUT_HDR_PEAK_LUMINANCE": "3dlut.hdr_peak_luminance",
+                    "3DLUT_HDR_SAT": "3dlut.hdr_sat",
+                    "3DLUT_HDR_HUE": "3dlut.hdr_hue",
+                    "3DLUT_HDR_DISPLAY": "3dlut.hdr_display",
+                    # MaxCLL is no longer used, map to mastering display max light level (MaxMLL)
+                    "3DLUT_HDR_MAXCLL": "3dlut.hdr_maxmll",
+                    "3DLUT_HDR_MAXMLL": "3dlut.hdr_maxmll",
+                    "3DLUT_HDR_MAXMLL_ALT_CLIP": "3dlut.hdr_maxmll_alt_clip",
+                    "3DLUT_HDR_MINMLL": "3dlut.hdr_minmll",
+                    "3DLUT_HDR_AMBIENT_LUMINANCE": "3dlut.hdr_ambient_luminance",
+                    "3DLUT_GAMMA": "3dlut.trc_gamma",
+                    "3DLUT_DEGREE_OF_BLACK_OUTPUT_OFFSET": "3dlut.trc_output_offset",
+                    "3DLUT_INPUT_ENCODING": "3dlut.encoding.input",
+                    "3DLUT_OUTPUT_ENCODING": "3dlut.encoding.output",
+                    "3DLUT_GAMUT_MAPPING_MODE": "3dlut.gamap.use_b2a",
+                    "3DLUT_RENDERING_INTENT": "3dlut.rendering_intent",
+                    "3DLUT_FORMAT": "3dlut.format",
+                    "3DLUT_SIZE": "3dlut.size",
+                    "3DLUT_INPUT_BITDEPTH": "3dlut.bitdepth.input",
+                    "3DLUT_OUTPUT_BITDEPTH": "3dlut.bitdepth.output",
+                    "3DLUT_APPLY_CAL": "3dlut.output.profile.apply_cal",
+                    "SIMULATION_PROFILE": "measurement_report.simulation_profile",
+                }
+                for keyword in config_lut:
+                    cfgname = config_lut[keyword]
+                    cfgvalue = cfgpart.queryv1(keyword)
+                    if keyword in (
+                        "MIN_DISPLAY_UPDATE_DELAY_MS",
+                        "DISPLAY_SETTLE_TIME_MULT",
+                    ):
+                        backup = getcfg(
+                            "measure.override_%s.backup" % keyword.lower(), False
+                        )
+                        if (
+                            cfgvalue is not None
+                            and display_match
+                            and (instrument_match or not instrument_id)
+                        ):
+                            # Only set display update delay if a matching
+                            # display/instrument stored in profile meta
+                            # tag or no instrument ID (i.e. a preset)
+                            if backup is None:
+                                setcfg(
+                                    "measure.override_%s.backup" % keyword.lower(),
+                                    getcfg("measure.override_" + keyword.lower()),
+                                )
+                                setcfg(
+                                    "measure.%s.backup" % keyword.lower(),
+                                    getcfg("measure." + keyword.lower()),
+                                )
+                            setcfg("measure.override_" + keyword.lower(), 1)
+                        elif backup is not None:
+                            setcfg("measure.override_" + keyword.lower(), backup)
+                            cfgvalue = getcfg("measure.%s.backup" % keyword.lower())
+                            setcfg(
+                                "measure.override_%s.backup" % keyword.lower(), None
+                            )
+                            setcfg("measure.%s.backup" % keyword.lower(), None)
+                    elif cfgvalue is not None:
+                        if keyword == "AUTO_OPTIMIZE" and cfgvalue:
+                            setcfg("testchart.file", "auto")
+                            if (
+                                is_preset
+                                and not is_3dlut_preset
+                                and sys.platform == "darwin"
+                            ):
+                                # Profile type forced to matrix due to
+                                # OS X bugs with cLUT profiles. Set
+                                # smallest testchart.
+                                cfgvalue = 1
+                        elif keyword == "PATCH_SEQUENCE":
+                            cfgvalue = cfgvalue.lower().replace("_rgb_", "_RGB_")
+                        elif keyword == "3DLUT_GAMMA":
+                            try:
+                                cfgvalue = float(cfgvalue)
+                            except Exception:
+                                pass
+                            else:
+                                if cfgvalue < 0:
+                                    gamma_type = "B"
+                                    cfgvalue = abs(cfgvalue)
+                                else:
+                                    gamma_type = "b"
+                                setcfg("3dlut.trc_gamma_type", gamma_type)
+                                # Sync measurement report settings
+                                setcfg(
+                                    "measurement_report.trc_gamma_type", gamma_type
+                                )
+                                setcfg("measurement_report.apply_black_offset", 0)
+                                setcfg("measurement_report.apply_trc", 1)
+                        elif keyword == "3DLUT_GAMUT_MAPPING_MODE":
+                            if cfgvalue == "G":
+                                cfgvalue = 0
+                            else:
+                                cfgvalue = 1
+                        elif keyword in (
+                            "FFP_INSERTION_INTERVAL",
+                            "FFP_INSERTION_DURATION",
+                            "FFP_INSERTION_LEVEL",
+                        ):
+                            setcfg("patterngenerator.ffp_insertion", 1)
+                        if keyword.startswith("3DLUT"):
+                            setcfg("3dlut.create", 1)
+                            setcfg("3dlut.tab.enable", 1)
+                            setcfg("3dlut.tab.enable.backup", 1)
+                    if cfgvalue is not None:
+                        cfgvalue = str(cfgvalue)
+                        if cfgname.endswith("profile") and (
+                            not os.path.isabs(cfgvalue)
+                            or not os.path.isfile(cfgvalue)
+                        ):
+                            if os.path.basename(os.path.dirname(cfgvalue)) == "ref":
+                                # Fall back to ref file if not absolute
+                                # path or not found
+                                cfgvalue = (
+                                    get_data_path(
+                                        "ref/" + os.path.basename(cfgvalue)
+                                    )
+                                    or cfgvalue
+                                )
+                            elif not os.path.dirname(cfgvalue):
+                                # Use profile dir
+                                cfgvalue = os.path.join(
+                                    os.path.dirname(path), cfgvalue
+                                )
+                        setcfg(cfgname, cfgvalue)
+                        if keyword == "SIMULATION_PROFILE":
+                            # Only HDR 3D LUTs will have this set
+                            simset = True
+                        # Sync measurement report settings
+                        if cfgname == "3dlut.input.profile":
+                            if not simset:
+                                setcfg(
+                                    "measurement_report.simulation_profile",
+                                    cfgvalue,
+                                )
+                            setcfg("measurement_report.use_simulation_profile", 1)
+                            setcfg(
+                                "measurement_report.use_simulation_profile_as_output",
+                                1,
+                            )
+                        elif cfgname in (
+                            "3dlut.trc_gamma",
+                            "3dlut.trc_output_offset",
+                        ):
+                            cfgname = cfgname.replace("3dlut", "measurement_report")
+                            setcfg(cfgname, cfgvalue)
+                        elif cfgname == "3dlut.format":
+                            if cfgvalue == "madVR" and not simset:
+                                setcfg("3dlut.enable", 1)
+                            if (
+                                cfgvalue == "madVR" and not simset
+                            ) or cfgvalue == "eeColor":
+                                setcfg("measurement_report.use_devlink_profile", 0)
+                        elif cfgname == "3dlut.trc":
+                            lut3d_trc_set = True
+                # Content color space (currently only used for HDR)
+                for color in ("white", "red", "green", "blue"):
+                    for coord in "xy":
+                        keyword = "3DLUT_CONTENT_COLORSPACE_%s_%s" % (
+                            color.upper(),
+                            coord.upper(),
+                        )
+                        cfgvalue = cfgpart.queryv1(keyword)
+                        if cfgvalue is None:
+                            continue
+                        cfgvalue = str(cfgvalue)
+                        try:
+                            cfgvalue = round(float(cfgvalue), 4)
+                        except ValueError:
+                            pass
+                        setcfg(
+                            "3dlut.content.colorspace.%s.%s" % (color, coord),
+                            cfgvalue,
+                        )
+                # Make sure 3D LUT TRC enumeration matches parameters for
+                # older profiles not containing 3DLUT_TRC
+                if not lut3d_trc_set:
+                    if (
+                        getcfg("3dlut.trc_gamma_type") == "B"
+                        and getcfg("3dlut.trc_output_offset") == 0
+                        and getcfg("3dlut.trc_gamma") == 2.4
+                    ):
+                        setcfg("3dlut.trc", "bt1886")  # BT.1886
+                    elif (
+                        getcfg("3dlut.trc_gamma_type") == "b"
+                        and getcfg("3dlut.trc_output_offset") == 1
+                        and getcfg("3dlut.trc_gamma") == 2.2
+                    ):
+                        setcfg("3dlut.trc", "gamma2.2")  # Pure power gamma 2.2
+                    else:
+                        setcfg("3dlut.trc", "customgamma")  # Custom
+            if not display_changed:
+                self.update_menus()
+                if not update_ccmx_items:
+                    self.update_estimated_measurement_time("cal")
+            self.lut3d_set_path()
+            if config.get_display_name() == "Resolve":
+                setcfg("3dlut.enable", 0)
+                setcfg("measurement_report.use_devlink_profile", 1)
+            elif config.get_display_name(None, True) == "Prisma":
+                setcfg("3dlut.enable", 1)
+                setcfg("measurement_report.use_devlink_profile", 0)
+            if getcfg("3dlut.format") == "madVR" and simset:
+                # Currently, it is not possible to verify HDR 3D LUTs
+                # through madVR in another way
+                setcfg("3dlut.enable", 0)
+                setcfg("measurement_report.use_devlink_profile", 1)
+            self.update_controls(
+                update_profile_name=update_profile_name,
+                update_ccmx_items=update_ccmx_items,
+            )
+            if set_size:
+                self.set_size(True)
             writecfg()
-            if load_vcgt:
-                # load calibration into lut
-                self.load_cal(silent=True)
-            if len(settings) == 0:
-                msg = lang.getstr("no_settings")
+
+            if ext.lower() in (".icc", ".icm"):
+                if load_vcgt:
+                    # load calibration into lut
+                    self.load_cal(silent=True)
+                if options_dispcal and options_colprof:
+                    return
+                elif options_dispcal:
+                    msg = lang.getstr("settings_loaded.cal_and_lut")
+                else:
+                    msg = lang.getstr("settings_loaded.profile_and_lut")
+            elif options_dispcal and options_colprof:
+                msg = lang.getstr("settings_loaded.cal_and_profile")
+            elif options_dispcal:
+                if not load_vcgt:
+                    msg = lang.getstr("settings_loaded.cal")
+                else:
+                    # load calibration into lut
+                    self.load_cal(silent=True)
+                    msg = lang.getstr("settings_loaded.cal_and_lut")
             else:
-                msg = lang.getstr("settings_loaded", ", ".join(settings))
-            if not silent and len(settings) == 0:
+                msg = lang.getstr("settings_loaded.profile")
+
+            # if not silent:
+            # InfoDialog(self, msg=msg + "\n" + path, ok=lang.getstr("ok"),
+            # bitmap=geticon(32, "dialog-information"))
+            return
+        elif ext.lower() in (".icc", ".icm"):
+            sel = self.calibration_file_ctrl.GetSelection()
+            if len(self.recent_cals) > sel and self.recent_cals[sel] == path:
+                self.recent_cals.remove(self.recent_cals[sel])
+                self.calibration_file_ctrl.Delete(sel)
+                cal = getcfg("calibration.file", False) or ""
+                if cal not in self.recent_cals:
+                    self.recent_cals.append(cal)
+                # The case-sensitive index could fail because of
+                # case insensitive file systems, e.g. if the
+                # stored filename string is
+                # "C:\Users\Name\AppData\DisplayCAL\storage\MyFile"
+                # but the actual filename is
+                # "C:\Users\Name\AppData\DisplayCAL\storage\myfile"
+                # (maybe because the user renamed the file)
+                idx = index_fallback_ignorecase(self.recent_cals, cal)
+                self.calibration_file_ctrl.SetSelection(idx)
+            if not silent:
                 InfoDialog(
                     self,
-                    msg=msg + "\n" + path,
+                    msg=lang.getstr("no_settings") + "\n" + path,
                     ok=lang.getstr("ok"),
-                    bitmap=geticon(32, "dialog-information"),
+                    bitmap=geticon(32, "dialog-error"),
                 )
-                if (
-                    load_vcgt
-                    and getattr(self, "lut_viewer", None)
-                    and sys.platform == "win32"
-                ):
-                    # Needed under Windows when using double buffering
-                    self.lut_viewer.Refresh()
+            return
+
+        # Old .cal file without ARGYLL_DISPCAL_ARGS section
+
+        setcfg("last_cal_path", path)
+
+        # Restore defaults
+        self.restore_defaults_handler(
+            include=(
+                "calibration",
+                "profile.update",
+                "measure.override_min_display_update_delay_ms",
+                "measure.min_display_update_delay_ms",
+                "measure.override_display_settle_time_mult",
+                "measure.display_settle_time_mult",
+                "trc",
+                "whitepoint",
+            ),
+            exclude=(
+                "calibration.black_point_correction_choice.show",
+                "calibration.update",
+                "trc.should_use_viewcond_adjust.show_msg",
+            ),
+        )
+
+        self.worker.options_dispcal = []
+        settings = []
+        for line in ti3_lines:
+            line = line.strip().split(b" ", 1)
+            if len(line) > 1:
+                value = line[1][1:-1]  # strip quotes
+                if line[0] == "DEVICE_CLASS":
+                    if value != "DISPLAY":
+                        InfoDialog(
+                            self,
+                            msg=lang.getstr("calibration.file.invalid")
+                            + "\n"
+                            + path,
+                            ok=lang.getstr("ok"),
+                            bitmap=geticon(32, "dialog-error"),
+                        )
+                        return
+                elif line[0] == "DEVICE_TYPE":
+                    measurement_mode = value.lower()[0]
+                    if measurement_mode in ("c", "l"):
+                        setcfg("measurement_mode", measurement_mode)
+                        self.worker.options_dispcal.append("-y" + measurement_mode)
+                elif line[0] == "NATIVE_TARGET_WHITE":
+                    setcfg("whitepoint.colortemp", None)
+                    setcfg("whitepoint.x", None)
+                    setcfg("whitepoint.y", None)
+                    setcfg("3dlut.whitepoint.x", None)
+                    setcfg("3dlut.whitepoint.y", None)
+                    settings.append(lang.getstr("whitepoint"))
+                elif line[0] == "TARGET_WHITE_XYZ":
+                    XYZ = value.split()
+                    i = 0
+                    try:
+                        for component in XYZ:
+                            # Normalize to 0.0 - 1.0
+                            XYZ[i] = float(component) / 100
+                            i += 1
+                    except ValueError:
+                        continue
+                    x, y, Y = XYZ2xyY(XYZ[0], XYZ[1], XYZ[2])
+                    XYZ2CCT(XYZ[0], XYZ[1], XYZ[2])
+                    if lang.getstr("whitepoint") not in settings:
+                        setcfg("whitepoint.colortemp", None)
+                        setcfg("whitepoint.x", round(x, 4))
+                        setcfg("whitepoint.y", round(y, 4))
+                        setcfg("3dlut.whitepoint.x", round(x, 4))
+                        setcfg("3dlut.whitepoint.y", round(y, 4))
+                        self.worker.options_dispcal.append(
+                            "-w%s,%s"
+                            % (getcfg("whitepoint.x"), getcfg("whitepoint.y"))
+                        )
+                        settings.append(lang.getstr("whitepoint"))
+                    setcfg("calibration.luminance", stripzeros(round(Y * 100, 3)))
+                    self.worker.options_dispcal.append(
+                        "-b%s" % getcfg("calibration.luminance")
+                    )
+                    settings.append(lang.getstr("calibration.luminance"))
+                elif line[0] == "TARGET_GAMMA":
+                    setcfg("trc", None)
+                    if value in ("L_STAR", "REC709", "SMPTE240M", "sRGB"):
+                        setcfg("trc.type", "g")
+                    if value == "L_STAR":
+                        setcfg("trc", "l")
+                    elif value == "REC709":
+                        setcfg("trc", "709")
+                    elif value == "SMPTE240M":
+                        setcfg("trc", "240")
+                    elif value == "sRGB":
+                        setcfg("trc", "s")
+                    else:
+                        try:
+                            value = stripzeros(value)
+                            if float(value) < 0:
+                                setcfg("trc.type", "G")
+                                value = abs(value)
+                            else:
+                                setcfg("trc.type", "g")
+                            setcfg("trc", value)
+                        except ValueError:
+                            continue
+                    self.worker.options_dispcal.append(
+                        "-" + getcfg("trc.type") + str(getcfg("trc"))
+                    )
+                    settings.append(lang.getstr("trc"))
+                elif line[0] == "DEGREE_OF_BLACK_OUTPUT_OFFSET":
+                    setcfg("calibration.black_output_offset", stripzeros(value))
+                    self.worker.options_dispcal.append(
+                        "-f%s" % getcfg("calibration.black_output_offset")
+                    )
+                    settings.append(lang.getstr("calibration.black_output_offset"))
+                elif line[0] == "BLACK_POINT_CORRECTION":
+                    if stripzeros(value) >= 0:
+                        black_point_correction = True
+                        setcfg(
+                            "calibration.black_point_correction", stripzeros(value)
+                        )
+                        self.worker.options_dispcal.append(
+                            "-k%s" % getcfg("calibration.black_point_correction")
+                        )
+                    settings.append(
+                        lang.getstr("calibration.black_point_correction")
+                    )
+                elif line[0] == "TARGET_BLACK_BRIGHTNESS":
+                    setcfg("calibration.black_luminance", stripzeros(value))
+                    self.worker.options_dispcal.append(
+                        "-B%s" % getcfg("calibration.black_luminance")
+                    )
+                    settings.append(lang.getstr("calibration.black_luminance"))
+                elif line[0] == "QUALITY":
+                    setcfg("calibration.quality", value.lower()[0])
+                    self.worker.options_dispcal.append(
+                        "-q" + getcfg("calibration.quality")
+                    )
+                    settings.append(lang.getstr("calibration.quality"))
+        if not black_point_correction:
+            setcfg("calibration.black_point_correction.auto", 1)
+
+        setcfg("calibration.file", path)
+        self.update_controls(update_profile_name=update_profile_name)
+        if "CTI3" in ti3_lines:
+            if debug:
+                print("[D] load_cal_handler testchart.file:", path)
+            setcfg("testchart.file", path)
+        writecfg()
+        if load_vcgt:
+            # load calibration into lut
+            self.load_cal(silent=True)
+        if len(settings) == 0:
+            msg = lang.getstr("no_settings")
+        else:
+            msg = lang.getstr("settings_loaded", ", ".join(settings))
+        if not silent and len(settings) == 0:
+            InfoDialog(
+                self,
+                msg=msg + "\n" + path,
+                ok=lang.getstr("ok"),
+                bitmap=geticon(32, "dialog-information"),
+            )
+            if (
+                load_vcgt
+                and getattr(self, "lut_viewer", None)
+                and sys.platform == "win32"
+            ):
+                # Needed under Windows when using double buffering
+                self.lut_viewer.Refresh()
 
     def delete_calibration_handler(self, event):
         cal = getcfg("calibration.file", False)
