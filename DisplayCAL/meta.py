@@ -54,7 +54,7 @@ appstream_id = ".".join(reversed([name] + DOMAIN.split(".")))
 name_html = '<span class="appname">Display<span>CAL</span></span>'
 
 py_minversion = (3, 8)
-py_maxversion = (3, 12)
+py_maxversion = (3, 13)
 
 version = VERSION_STRING
 version_lin = VERSION_STRING  # Linux

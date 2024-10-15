@@ -12,7 +12,6 @@ import http.client
 import math
 import mimetypes
 import os
-import pipes
 from io import BytesIO
 from pathlib import Path
 

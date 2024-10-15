@@ -182,7 +182,7 @@ def add_lib_excludes(key, excludebits):
         config["excludes"][key].extend([f"{name}.lib{exclude}", f"lib{exclude}"])
 
     for exclude in ("32", "64"):
-        for pycompat in ("38", "39", "310", "311"):
+        for pycompat in ("38", "39", "310", "311", "312", "313"):
             if key == "win32" and (
                 pycompat == str(sys.version_info[0]) + str(sys.version_info[1])
                 or exclude == excludebits[0]
@@ -463,6 +463,7 @@ def build_py2exe():
             "Programming Language :: Python :: 3.10",
             "Programming Language :: Python :: 3.11",
             "Programming Language :: Python :: 3.12",
+            "Programming Language :: Python :: 3.13",
             "Topic :: Multimedia :: Graphics",
         ],
         "data_files": data_files,
