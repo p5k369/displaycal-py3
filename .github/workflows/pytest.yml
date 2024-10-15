@@ -56,7 +56,7 @@ jobs:
         elif [ "${{ matrix.python-version }}" == "3.12" ]; then
           echo "add_dir_str=cpython-312" >> $GITHUB_ENV
         elif [ "${{ matrix.python-version }}" == "3.13" ]; then
-          echo "add_dir_str=cpython-312" >> $GITHUB_ENV
+          echo "add_dir_str=cpython-313" >> $GITHUB_ENV
         fi
 
     - name: Setup xvfb
