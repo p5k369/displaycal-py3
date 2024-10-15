@@ -668,7 +668,7 @@ class PolyMarker(PolyPoints):
         wh = 5.0 * size
         rect = np.zeros((len(coords), 4), float) + [0.0, 0.0, wh, wh]
         rect[:, 0:2] = coords - [fact, fact]
-        dc.DrawEllipseList(rect.astype(np.Int32))
+        dc.DrawEllipseList(rect.astype(np.int32))
 
     def _dot(self, dc, coords, size=1):
         dc.DrawPointList(coords)
@@ -678,7 +678,7 @@ class PolyMarker(PolyPoints):
         wh = 5.0 * size
         rect = np.zeros((len(coords), 4), float) + [0.0, 0.0, wh, wh]
         rect[:, 0:2] = coords - [fact, fact]
-        dc.DrawRectangleList(rect.astype(np.Int32))
+        dc.DrawRectangleList(rect.astype(np.int32))
 
     def _triangle(self, dc, coords, size=1):
         shape = [
@@ -689,7 +689,7 @@ class PolyMarker(PolyPoints):
         poly = np.repeat(coords, 3, 0)
         poly.shape = (len(coords), 3, 2)
         poly += shape
-        dc.DrawPolygonList(poly.astype(np.Int32))
+        dc.DrawPolygonList(poly.astype(np.int32))
 
     def _triangle_down(self, dc, coords, size=1):
         shape = [
@@ -700,19 +700,19 @@ class PolyMarker(PolyPoints):
         poly = np.repeat(coords, 3, 0)
         poly.shape = (len(coords), 3, 2)
         poly += shape
-        dc.DrawPolygonList(poly.astype(np.Int32))
+        dc.DrawPolygonList(poly.astype(np.int32))
 
     def _cross(self, dc, coords, size=1):
         fact = 2.5 * size
         for f in [[-fact, -fact, fact, fact], [-fact, fact, fact, -fact]]:
             lines = np.concatenate((coords, coords), axis=1) + f
-            dc.DrawLineList(lines.astype(np.Int32))
+            dc.DrawLineList(lines.astype(np.int32))
 
     def _plus(self, dc, coords, size=1):
         fact = 2.5 * size
         for f in [[-fact, 0, fact, 0], [0, -fact, 0, fact]]:
             lines = np.concatenate((coords, coords), axis=1) + f
-            dc.DrawLineList(lines.astype(np.Int32))
+            dc.DrawLineList(lines.astype(np.int32))
 
 
 class PlotGraphics:
