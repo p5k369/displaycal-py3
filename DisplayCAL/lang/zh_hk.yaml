@@ -1960,6 +1960,8 @@
   %Y	年份包含年代
 "profile.no_embedded_ti3": |-
   該描述檔不包含 Argyll 兼容的測量數據。
+"*profile.no_targ": |-
+  The profile does not contain target information.
 "profile.no_vcgt": |-
   該描述檔不包含校正曲線。
 "profile.only_named_color": |-

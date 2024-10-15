@@ -1955,6 +1955,8 @@
   %Y	年份与世纪
 "profile.no_embedded_ti3": |-
   配置文件不包含与 Argyll 兼容的测量数据。
+"*profile.no_targ": |-
+  The profile does not contain target information.
 "profile.no_vcgt": |-
   配置文件不包含校准曲线。
 "profile.only_named_color": |-
