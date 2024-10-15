@@ -21,6 +21,7 @@ jobs:
           - "3.10"
           - "3.11"
           - "3.12"
+          - "3.13"
         wx-version:
           - "4.1.1"
           - "4.2.1"
@@ -31,6 +32,10 @@ jobs:
           - python-version: "3.12"
             wx-version: "4.1.1"
           - python-version: "3.12"
+            wx-version: "4.2.1"
+          - python-version: "3.13"
+            wx-version: "4.1.1"
+          - python-version: "3.13"
             wx-version: "4.2.1"
 
     steps:
@@ -49,6 +54,8 @@ jobs:
         elif [ "${{ matrix.python-version }}" == "3.11" ]; then
           echo "add_dir_str=cpython-311" >> $GITHUB_ENV
         elif [ "${{ matrix.python-version }}" == "3.12" ]; then
+          echo "add_dir_str=cpython-312" >> $GITHUB_ENV
+        elif [ "${{ matrix.python-version }}" == "3.13" ]; then
           echo "add_dir_str=cpython-312" >> $GITHUB_ENV
         fi
 
