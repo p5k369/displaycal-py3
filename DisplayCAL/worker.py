@@ -1945,11 +1945,10 @@ class Sudo(object):
     def _expect_timeout(self, patterns, timeout=-1, child_timeout=1):
         """wexpect.spawn.expect with better timeout handling.
 
-        The default expect can block up to timeout seconds if the child is
-        already dead. To prevent this, we run expect in a loop until a pattern
-        is matched, timeout is reached or an exception occurs. The max time an
-        expect call will block if the child is already dead can be set with the
-        child_timeout parameter.
+        The default expect can block up to timeout seconds if the child is already dead.
+        To prevent this, we run expect in a loop until a pattern is matched, timeout is
+        reached or an exception occurs. The max time an expect call will block if the
+        child is already dead can be set with the child_timeout parameter.
         """
         if timeout == -1:
             timeout = self.subprocess.timeout
@@ -2082,10 +2081,12 @@ class Sudo(object):
         return self.is_allowed(args, pwd), pwd
 
     def is_allowed(self, args=None, pwd=""):
-        """Check if a command is allowed via sudo. Return either a string
-        listing allowed and forbidden commands, or the fully-qualified path of
-        the command along with any arguments, or an error message in case the
-        command is not allowed, or False if the password was not accepted.
+        """Check if a command is allowed via sudo.
+
+        Return either a string listing allowed and forbidden commands, or the
+        fully-qualified path of the command along with any arguments, or an error
+        message in case the command is not allowed, or False if the password was not
+        accepted.
 
         The returned error is a custom class that will always have length 0
         if the command is not allowed (even if the actual string length is

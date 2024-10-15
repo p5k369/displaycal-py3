@@ -391,10 +391,12 @@ def spawn(
 
 
 class spawn_unix(object):
-    """This is the main class interface for Pexpect. Use this class to start and control child applications.
+    """The main class interface for Pexpect.
 
-    The command parameter may be a string that
-    includes a command and any arguments to the command. For example::
+    Use this class to start and control child applications.
+
+    The command parameter may be a string that includes a command and any arguments to
+    the command. For example::
 
         child = pexpect.spawn('/usr/bin/ftp')
         child = pexpect.spawn('/usr/bin/ssh user@example.com')
@@ -500,8 +502,6 @@ class spawn_unix(object):
     If you need more detail you can also read the self.status member which
     stores the status returned by os.waitpid. You can interpret this using
     os.WIFEXITED/os.WEXITSTATUS or os.WIFSIGNALED/os.TERMSIG.
-
-
     """
 
     def __init__(
@@ -984,7 +984,7 @@ class spawn_unix(object):
                 raise EOF(
                     "End Of File (EOF) in read_nonblocking(). Exception style platform."
                 )
-            if s == "":  # BSD style
+            if s == b"":  # BSD style
                 self.flag_eof = True
                 raise EOF(
                     "End Of File (EOF) in read_nonblocking(). Empty string style platform."
@@ -1376,46 +1376,46 @@ class spawn_unix(object):
         return compiled_pattern_list
 
     def expect(self, pattern, timeout=-1, searchwindowsize=None):
-        """This seeks through the stream until a pattern is matched. The
-        pattern is overloaded and may take several types. The pattern can be a
-        StringType, EOF, a compiled re, or a list of any of those types.
-        Strings will be compiled to re types. This returns the index into the
-        pattern list. If the pattern was not a list this returns index 0 on a
-        successful match. This may raise exceptions for EOF or TIMEOUT. To
-        avoid the EOF or TIMEOUT exceptions add EOF or TIMEOUT to the pattern
-        list. That will cause expect to match an EOF or TIMEOUT condition
+        """Seek through the stream until a pattern is matched.
+        
+        The pattern is overloaded and may take several types. The pattern can be a
+        StringType, EOF, a compiled re, or a list of any of those types. Strings will be
+        compiled to re types.
+
+        This returns the index into the pattern list. If the pattern was not a list this
+        returns index 0 on a successful match. This may raise exceptions for EOF or
+        TIMEOUT. To avoid the EOF or TIMEOUT exceptions add EOF or TIMEOUT to the
+        pattern list. That will cause expect to match an EOF or TIMEOUT condition
         instead of raising an exception.
 
-        If you pass a list of patterns and more than one matches, the first match
-        in the stream is chosen. If more than one pattern matches at that point,
-        the leftmost in the pattern list is chosen. For example::
+        If you pass a list of patterns and more than one matches, the first match in the
+        stream is chosen. If more than one pattern matches at that point, the leftmost
+        in the pattern list is chosen. For example::
 
             # the input is 'foobar'
             index = p.expect (['bar', 'foo', 'foobar'])
             # returns 1 ('foo') even though 'foobar' is a "better" match
 
-        Please note, however, that buffering can affect this behavior, since
-        input arrives in unpredictable chunks. For example::
+        Please note, however, that buffering can affect this behavior, since input
+        arrives in unpredictable chunks. For example::
 
             # the input is 'foobar'
             index = p.expect (['foobar', 'foo'])
             # returns 0 ('foobar') if all input is available at once,
             # but returs 1 ('foo') if parts of the final 'bar' arrive late
 
-        After a match is found the instance attributes 'before', 'after' and
-        'match' will be set. You can see all the data read before the match in
-        'before'. You can see the data that was matched in 'after'. The
-        re.MatchObject used in the re match will be in 'match'. If an error
-        occurred then 'before' will be set to all the data read so far and
-        'after' and 'match' will be None.
+        After a match is found the instance attributes 'before', 'after' and 'match'
+        will be set. You can see all the data read before the match in 'before'. You can
+        see the data that was matched in 'after'. The re.MatchObject used in the re
+        match will be in 'match'. If an error occurred then 'before' will be set to all
+        the data read so far and 'after' and 'match' will be None.
 
         If timeout is -1 then timeout will be set to the self.timeout value.
 
-        A list entry may be EOF or TIMEOUT instead of a string. This will
-        catch these exceptions and return the index of the list entry instead
-        of raising the exception. The attribute 'after' will be set to the
-        exception type. The attribute 'match' will be None. This allows you to
-        write code like this::
+        A list entry may be EOF or TIMEOUT instead of a string. This will catch these
+        exceptions and return the index of the list entry instead of raising the
+        exception. The attribute 'after' will be set to the exception type. The
+        attribute 'match' will be None. This allows you to write code like this::
 
                 index = p.expect (['good', 'bad', pexpect.EOF, pexpect.TIMEOUT])
                 if index == 0:
@@ -1440,9 +1440,9 @@ class spawn_unix(object):
                 except TIMEOUT:
                     do_something_completely_different()
 
-        These two forms are equivalent. It all depends on what you want. You
-        can also just expect the EOF if you are waiting for all output of a
-        child to finish. For example::
+        These two forms are equivalent. It all depends on what you want. You can also
+        just expect the EOF if you are waiting for all output of a child to finish. For
+        example::
 
                 p = pexpect.spawn('/bin/ls')
                 p.expect (pexpect.EOF)
@@ -1454,15 +1454,15 @@ class spawn_unix(object):
         return self.expect_list(compiled_pattern_list, timeout, searchwindowsize)
 
     def expect_list(self, pattern_list, timeout=-1, searchwindowsize=-1):
-        """This takes a list of compiled regular expressions and returns the
-        index into the pattern_list that matched the child output. The list may
-        also contain EOF or TIMEOUT (which are not compiled regular
+        """Return the index into the pattern_list that matched the child output.
+
+        The list may also contain EOF or TIMEOUT (which are not compiled regular
         expressions). This method is similar to the expect() method except that
-        expect_list() does not recompile the pattern list on every call. This
-        may help if you are trying to optimize for speed, otherwise just use
-        the expect() method.  This is called by expect(). If timeout==-1 then
-        the self.timeout value is used. If searchwindowsize==-1 then the
-        self.searchwindowsize value is used."""
+        expect_list() does not recompile the pattern list on every call. This may help
+        if you are trying to optimize for speed, otherwise just use the expect() method.
+        This is called by expect(). If timeout==-1 then the self.timeout value is used.
+        If searchwindowsize==-1 then the self.searchwindowsize value is used.
+        """
         return self.expect_loop(searcher_re(pattern_list), timeout, searchwindowsize)
 
     def expect_exact(self, pattern_list, timeout=-1, searchwindowsize=-1):
@@ -1484,11 +1484,13 @@ class spawn_unix(object):
         )
 
     def expect_loop(self, searcher, timeout=-1, searchwindowsize=-1):
-        """This is the common loop used inside expect. The 'searcher' should be
-        an instance of searcher_re or searcher_string, which describes how and what
-        to search for in the input.
+        """The common loop used inside expect.
 
-        See expect() for other arguments, return value and exceptions."""
+        The 'searcher' should be an instance of searcher_re or searcher_string, which
+        describes how and what to search for in the input.
+
+        See expect() for other arguments, return value and exceptions.
+        """
         self.searcher = searcher
 
         end_time = -1
@@ -2841,8 +2843,7 @@ class searcher_string(object):
 
 
 class searcher_re(object):
-    """This is regular expression string search helper for the
-    spawn.expect_any() method.
+    """Regular expression string search helper for the spawn.expect_any() method.
 
     Attributes:
 
@@ -2876,8 +2877,7 @@ class searcher_re(object):
             self._searches.append((n, s))
 
     def __str__(self):
-        """This returns a human-readable string that represents the state of
-        the object."""
+        """Return a human-readable string that represents the state of the object."""
         ss = [
             (n, '    %d: re.compile(r"%s")' % (n, str(s.pattern)))
             for n, s in self._searches
@@ -2892,14 +2892,15 @@ class searcher_re(object):
         return "\n".join(ss)
 
     def search(self, buffer, freshlen, searchwindowsize=None):
-        """This searches 'buffer' for the first occurence of one of the regular
-        expressions. 'freshlen' must indicate the number of bytes at the end of
-        'buffer' which have not been searched before.
+        """Search 'buffer' for the first occurence of one of the regular expressions.
+
+        'freshlen' must indicate the number of bytes at the end of 'buffer' which have
+        not been searched before.
 
         See class spawn for the 'searchwindowsize' argument.
 
-        If there is a match this returns the index of that string, and sets
-        'start', 'end' and 'match'. Otherwise, returns -1.
+        If there is a match this returns the index of that string, and sets 'start',
+        'end' and 'match'. Otherwise, returns -1.
         """
         absurd_match = len(buffer)
         first_match = absurd_match
