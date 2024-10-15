@@ -10315,7 +10315,7 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
             exe,
             "import sys;"
             "sys.path.insert(0, %r);"
-            "import wxMeasureFrame;"
+            "from DisplayCAL import wxMeasureFrame;"
             "wxMeasureFrame.main();"
             "sys.exit(wxMeasureFrame.MeasureFrame.exitcode)" % pydir,
         )
