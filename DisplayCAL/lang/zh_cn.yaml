@@ -83,7 +83,7 @@
 "3dlut.hdr.rolloff.diffuse_white": |-
   漫射白色 (参考 94.38 cd/m²)
 "3dlut.hdr.system_gamma": |-
-  系统伽马值 (参考 1.2)
+  系统伽玛值 (参考 1.2)
 "3dlut.holder.assign_preset": |-
   指定 3D LUT 至预设
 "3dlut.holder.out_of_memory": |-
@@ -100,8 +100,8 @@
   3D LUT 安装成功！
 "3dlut.install.unsupported": |-
   3D LUT 安装不支持所选的 3D LUT 格式。
-"*3dlut.madvr.colorspace.unsupported": |-
-  The source colorspace %s with the primary chromaticity xy coordinates red %.4f %.4f, green %.4f %.4f, blue %.4f %.4f is not supported by madVR for automatic installation. Please assign the 3D LUT manually in madVR.
+"3dlut.madvr.colorspace.unsupported": |-
+  源色彩空间 %s 带有主色度xy坐标为红色 %.4f %.4f ，绿色 %.4f %.4f ，蓝色 %.4f %.4f ，不被madVR支持自动安装。请在madVR手动指定3D LUT。
 "3dlut.save_as": |-
   保存 3D LUT 为...
 "3dlut.settings": |-
@@ -259,8 +259,8 @@
   卸载 ArgyllCMS 校色仪驱动程序失败。
 "argyll.instrument.drivers.uninstall.success": |-
   卸载 ArgyllCMS 校色仪驱动程序完成。
-"*argyll.malformed_ccxx": |-
-  ArgyllCMS cannot function as long as malformed colorimeter correction files are present. They will be automatically moved to the trash.
+"argyll.malformed_ccxx": |-
+  ArgyllCMS 因为损坏的色度计校正文件而不能正常工作。它们将会被自动移入回收站。
 "argyll.util.not_found": |-
   ArgyllCMS “%s” 可执行文件未找到！
 "as_measured": |-
@@ -444,11 +444,11 @@
 "calibration.quality.verylow": |-
   超低
 "calibration.reset": |-
-  重置视频卡伽马表
+  重置视频卡伽玛表
 "calibration.reset_error": |-
-  视频卡伽马表不能重置。
+  视频卡伽玛表不能重置。
 "calibration.reset_success": |-
-  视频卡伽马表成功重置。
+  视频卡伽玛表成功重置。
 "calibration.resetting": |-
   重置视频卡伽玛表为线性...
 "calibration.settings": |-
@@ -537,8 +537,8 @@
   液晶 RG-磷光体 LED背光 系列 (AUO B156HW01 V.4 in Lenovo W520/W530)
 "ccss.RG_Phosphor_Family_25Jul12": |-
   液晶 GB-r-LED/RG-磷光体 LED背光 系列 (AUO B156HW01 V.4, Dell U2413)
-"*ccss.Samsung Q9 75_ (i1 Pro)": |-
-  LCD Quantum Dot LED (Samsung QLED Q9)
+"ccss.Samsung Q9 75_ (i1 Pro)": |-
+  液晶 量子点 LED背光 系列 (Samsung QLED Q9)
 "ccss.WGCCFLFamily_07Feb11": |-
   液晶 CCFL背光 广色域 系列 (NEC PA241W/PA271W)
 "ccss.WLEDFamily_07Feb11": |-
@@ -886,12 +886,12 @@
   显示器 & 校色仪
 "display.connection.type": |-
   连接
-"*display.levels_issue_detected": |-
-  The measured luminance difference between RGB level 0 and 16 is below 0.02 cd/m², indicating clipping. Likely either the display device's input- and/or black level setting is incorrect, and/or the output levels configuration of the graphics driver is wrong.
+"display.levels_issue_detected": |-
+  测量得到的RGB值在0到16之间的亮度差小于0.02 cd/m²,说明存在截断。有可能是显示设备的输入设置与/或黑电平设置不正确，又或是图形驱动的输出动态范围设置是错误的。
   
-  If your display device has a setting for input levels, please set it to full range RGB (0-255). If your display device doesn't have such a setting, set your graphics driver to output limited range (16-235) instead. Select “Retry” after making either change.
+  如果你的显示设备有输入范围的设置选项，请将其设置为全范围RGB（0-255）。如果你的显示设备没有这样的选项，则设置你的图形驱动为有限动态范围（16-235）。在修改设置完成后点击“重试”键。
   
-  If neither your display nor graphics driver has a range setting, you can also fix the output levels using the video card gamma table by clicking “Continue”, but note that this is the least preferable solution.
+  如果你的显示器和显示驱动都没有动态范围设置选项，你也可以点击“继续”以使用视频卡的伽玛表来修改输出动态范围，但请注意这是最不推荐的解决方案。
 "display.manufacturer": |-
   显示设备制造商
 "display.output": |-
@@ -1115,7 +1115,7 @@
 "*error.malformed_cgats": |-
   The %s file “%s” is malformed.
 "error.measurement.file_invalid": |-
-  测量文件 „%s“ 无效。
+  测量文件 “%s” 无效。
 "error.measurement.file_missing": |-
   测量文件 “%s” 丢失。
 "error.measurement.file_not_created": |-
@@ -1136,8 +1136,8 @@
   配置文件未创建。
 "error.source_dest_same": |-
   源和目标配置文件相同。
-"*error.spyderx.black_cal_offsets_too_high": |-
-  The instrument self-calibration offsets are too high. Make sure no light shines on the sensor during instrument self-calibration (put the cap on tightly).
+"error.spyderx.black_cal_offsets_too_high": |-
+  设备的自校准偏置值太高了。确保在设备自校准过程中没有光线照在传感器上（把盖子盖紧）。
 "error.testchart.creation_failed": |-
   测试图表文件 “%s” 不能创建。可能存在访问限制，或源文件不存在。
 "error.testchart.invalid": |-
@@ -1239,8 +1239,8 @@
   胶片写入仪
 "finish": |-
   完成
-"*fix_output_levels_using_vcgt": |-
-  Fix output levels using video card gamma table
+"fix_output_levels_using_vcgt": |-
+  使用视频卡的伽玛表修正输出电平
 "flare": |-
   闪光
 "flexography": |-
@@ -1564,8 +1564,8 @@
   光亮度
 "lut_access": |-
   视频卡伽玛表访问
-"*lut_access.unsupported": |-
-  Your graphics drivers or hardware do not support loadable gamma ramps or calibration. You may need to update your device drivers.
+"lut_access.unsupported": |-
+  你的图形驱动或者硬件不支持可加载的伽玛渐变或者校准数据。你可能需要更新你的设备驱动。
 "*macos.bugs.cal.warning": |-
   Applications using the Apple CMM (color management module), like macOS Preview and QuickLook, do not support calibration black point hue correction.
   Applications that use their own color management are not affected (like Adobe Creative Suite using Adobe ACE, or open source graphics applications using littleCMS like GIMP or Krita, or applications employing 3D LUTs for color management).
@@ -1955,8 +1955,8 @@
   %Y	年份与世纪
 "profile.no_embedded_ti3": |-
   配置文件不包含与 Argyll 兼容的测量数据。
-"*profile.no_targ": |-
-  The profile does not contain target information.
+"profile.no_targ": |-
+  配置文件不包含target信息。
 "profile.no_vcgt": |-
   配置文件不包含校准曲线。
 "profile.only_named_color": |-
@@ -2489,7 +2489,7 @@
 "vcgt": |-
   校准曲线
 "vcgt.mismatch": |-
-  显示器 %s 的视频卡伽马表与所需状态不匹配。
+  显示器 %s 的视频卡伽玛表与所需状态不匹配。
 "vcgt.unknown_format": |-
   配置文件 “%s” 中的未知视频卡伽玛表格式。
 "verification": |-
@@ -2509,7 +2509,7 @@
 "verify_video_extended.ti1": |-
   扩展验证测试图表 (视频)
 "verify_video_extended_hlg_p3_2020.ti1": |-
-  扩展验证测试图表 (HDR 视频, Rec. 2020/P3, 混合对数伽马值)
+  扩展验证测试图表 (HDR 视频, Rec. 2020/P3, 混合对数伽玛值)
 "verify_video_extended_smpte2084_100_p3_2020.ti1": |-
   扩展验证测试图表 (HDR 视频, Rec. 2020/P3, SMPTE 2084, 100 cd/m²)
 "verify_video_extended_smpte2084_200_p3_2020.ti1": |-
