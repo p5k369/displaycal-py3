@@ -1509,7 +1509,7 @@ class GamapFrame(BaseFrame):
                 src_viewcond = getcfg("gamap_src_viewcond")
                 if event and (
                     (
-                        src_viewcond in [None].extend(self.viewconds_out_nondisplay)
+                        src_viewcond in ([None] + self.viewconds_out_nondisplay)
                         and profile.profileClass in (b"mntr", b"spac")
                     )
                     or (
