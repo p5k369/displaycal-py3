@@ -4,7 +4,7 @@ import locale
 import os
 import sys
 
-from DisplayCAL.encoding import get_encoding, get_encodings
+from DisplayCAL.encoding import get_encodings
 
 
 original_codepage = None

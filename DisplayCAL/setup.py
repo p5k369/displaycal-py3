@@ -199,7 +199,7 @@ def add_lib_excludes(key, excludebits):
         config["excludes"][key].extend([f"{name}.lib{exclude}", f"lib{exclude}"])
 
     for exclude in ("32", "64"):
-        for pycompat in ("38", "39", "310", "311", "312"):
+        for pycompat in ("38", "39", "310", "311", "312", "313"):
             if key == "win32" and (
                 pycompat == str(sys.version_info[0]) + str(sys.version_info[1])
                 or exclude == excludebits[0]
@@ -990,7 +990,7 @@ setup(ext_modules=[Extension("{name}.lib{bits}.RealDisplaySizeMM", sources={sour
     packages = [name, f"{name}.lib", f"{name}.lib.agw"]
     if sdist:
         # For source distributions we want all libraries
-        for pycompat in ("38", "39", "310", "311", "312"):
+        for pycompat in ("38", "39", "310", "311", "312", "313"):
             packages.extend([f"{name}.lib{bits}", f"{name}.lib{bits}.python{pycompat}"])
     elif sys.platform == "darwin":
         # On Mac OS X we only want the universal binaries
@@ -1023,6 +1023,7 @@ setup(ext_modules=[Extension("{name}.lib{bits}.RealDisplaySizeMM", sources={sour
             "Programming Language :: Python :: 3.10",
             "Programming Language :: Python :: 3.11",
             "Programming Language :: Python :: 3.12",
+            "Programming Language :: Python :: 3.13",
             "Topic :: Multimedia :: Graphics",
         ],
         "data_files": data_files,

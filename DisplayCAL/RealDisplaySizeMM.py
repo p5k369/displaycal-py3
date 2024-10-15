@@ -29,8 +29,8 @@ else:
         from DisplayCAL.lib64.python311.RealDisplaySizeMM import *
     elif sys.version_info[:2] == (3, 12):
         from DisplayCAL.lib64.python312.RealDisplaySizeMM import *
-# else:
-#     pass
+    elif sys.version_info[:2] == (3, 13):
+        from DisplayCAL.lib64.python313.RealDisplaySizeMM import *
 
 # TODO: For Linux use the ``xrandr`` command output which supplies everything.
 #
