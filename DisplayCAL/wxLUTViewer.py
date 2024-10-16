@@ -533,10 +533,10 @@ class LUTCanvas(plot.PlotCanvas):
             )  # upper right corner user scale (xmax,ymax)
         else:
             # Both axis specified in Draw
-            p1 = plot._Numeric.array(
+            p1 = numpy.array(
                 [xAxis[0], yAxis[0]]
             )  # lower left corner user scale (xmin,ymin)
-            p2 = plot._Numeric.array(
+            p2 = numpy.array(
                 [xAxis[1], yAxis[1]]
             )  # upper right corner user scale (xmax,ymax)
         ptx, pty, rectWidth, rectHeight = self._point2ClientCoord(p1, p2)
