@@ -3,9 +3,7 @@
 import math
 import os
 import re
-import subprocess as sp
 import sys
-import tempfile
 
 import numpy
 
@@ -28,9 +26,7 @@ from DisplayCAL.util_os import waccess
 from DisplayCAL.worker import (
     Error,
     UnloggedError,
-    UnloggedInfo,
     Worker,
-    get_argyll_util,
     make_argyll_compatible_path,
     show_result_dialog,
 )
@@ -606,7 +602,7 @@ class LUTCanvas(plot.PlotCanvas):
     def OnMouseLeftDown(self, event):
         self.erase_pointlabel()
         self._zoomCorner1[0], self._zoomCorner1[1] = self._getXY(event)
-        self._screenCoordinates = plot._Numeric.array(event.GetPosition())
+        self._screenCoordinates = numpy.array(event.GetPosition())
         if self._dragEnabled:
             self.SetCursor(self.GrabHandCursor)
             self.canvas.CaptureMouse()
