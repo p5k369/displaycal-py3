@@ -1008,7 +1008,7 @@ class GamutViewOptions(wx_Panel):
         else:
             self.DrawCanvas()
 
-    def get_colorspace(self, dimensions : int = 2) -> str:
+    def get_colorspace(self, dimensions: int = 2) -> str:
         """Return currently selected colorspace name.
 
         Args:

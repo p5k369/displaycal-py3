@@ -1708,9 +1708,7 @@ class PlotCanvas(wx.Panel):
         textSize_scale = np.array(
             [rhsW + lhsW, bottomH + topH]
         )  # make plot area smaller by text size
-        textSize_shift = np.array(
-            [lhsW, bottomH]
-        )  # shift plot area by this amount
+        textSize_shift = np.array([lhsW, bottomH])  # shift plot area by this amount
 
         # draw title if requested
         if self._titleEnabled:
@@ -1730,12 +1728,8 @@ class PlotCanvas(wx.Panel):
         )
 
         # allow for scaling and shifting plotted points
-        scale = (
-            (self.plotbox_size - textSize_scale) / (p2 - p1) * np.array((1, -1))
-        )
-        shift = (
-            -p1 * scale + self.plotbox_origin + textSize_shift * np.array((1, -1))
-        )
+        scale = (self.plotbox_size - textSize_scale) / (p2 - p1) * np.array((1, -1))
+        shift = -p1 * scale + self.plotbox_origin + textSize_shift * np.array((1, -1))
         self._pointScale = scale / self._pointSize  # make available for mouse events
         self._pointShift = shift / self._pointSize
 
@@ -1890,9 +1884,7 @@ class PlotCanvas(wx.Panel):
         """
         if self.last_PointLabel is not None:
             # compare pointXY
-            if np.any(
-                mDataDict["pointXY"] != self.last_PointLabel["pointXY"]
-            ):
+            if np.any(mDataDict["pointXY"] != self.last_PointLabel["pointXY"]):
                 # closest changed
                 self._drawPointLabel(self.last_PointLabel)  # erase old
                 self._drawPointLabel(mDataDict)  # plot new
