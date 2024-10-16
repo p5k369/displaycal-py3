@@ -545,14 +545,14 @@ def main(module=None):
         name = "%s-%s" % (appbasename, module)
     else:
         name = appbasename
-    app_lock_file_name = os.path.join(confighome, "%s.lock" % name)
+    app_lock_file_name = os.path.join(confighome, f"{name}.lock")
     try:
         _main(module, name, app_lock_file_name)
     except Exception as exception:
         if isinstance(exception, ResourceError):
             error = exception
         else:
-            error = Error("Fatal error: %s" % exception)
+            error = Error(f"Fatal error: {exception}")
         handle_error(error)
         _exit(app_lock_file_name, getattr(sys, "_appsocket_port", ""))
 

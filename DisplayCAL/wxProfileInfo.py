@@ -406,9 +406,8 @@ class GamutCanvas(LUTCanvas):
     def setup(
         self, profiles=None, profile_no=None, intent="a", direction="f", order="n"
     ):
-        self.size = (
-            40  # Number of segments from one primary to the next secondary color
-        )
+        # Number of segments from one primary to the next secondary color
+        self.size = 40
 
         if not check_set_argyll_bin():
             return
@@ -417,6 +416,7 @@ class GamutCanvas(LUTCanvas):
         xicclu = get_argyll_util("xicclu")
         if not xicclu:
             return
+
         cwd = self.worker.create_tempdir()
         if isinstance(cwd, Exception):
             raise cwd
@@ -426,6 +426,7 @@ class GamutCanvas(LUTCanvas):
                 ICCP.ICCProfile(get_data_path("ref/sRGB.icm")),
                 get_display_profile(),
             ]
+
         for i, profile in enumerate(profiles):
             if profile_no is not None and i != profile_no:
                 continue
@@ -721,8 +722,8 @@ class GamutViewOptions(wx_Panel):
         self.colorspace_label.SetForegroundColour(FGCOLOUR)
         self.options_sizer.Add(self.colorspace_label, flag=wx.ALIGN_CENTER_VERTICAL)
         self.colorspace_select = wx.Choice(
-            self,
-            -1,
+            parent=self,
+            id=-1,
             size=(150 * scale, -1),
             choices=[
                 "CIE a*b*",
@@ -748,7 +749,7 @@ class GamutViewOptions(wx_Panel):
         self.options_sizer.Add((0, 0))
         self.options_sizer.Add((0, 0))
         self.draw_gamut_outline_cb = CustomCheckBox(
-            self, -1, lang.getstr("colorspace.show_outline")
+            parent=self, id=-1, label=lang.getstr("colorspace.show_outline")
         )
         self.draw_gamut_outline_cb.Bind(
             wx.EVT_CHECKBOX, self.draw_gamut_outline_handler
@@ -820,7 +821,7 @@ class GamutViewOptions(wx_Panel):
             if desc not in self.comparison_profiles:
                 self.comparison_profiles[desc] = profile
         self.comparison_profile_select = wx.Choice(
-            self, -1, size=(150 * scale, -1), choices=[]
+            parent=self, id=-1, size=(150 * scale, -1), choices=[]
         )
         self.comparison_profiles_sort()
         self.options_sizer.Add(
@@ -926,8 +927,16 @@ class GamutViewOptions(wx_Panel):
         return self.get_colorspace()
 
     @property
-    def comparison_profile(self):
-        index = max(self.comparison_profile_select.GetSelection(), 0)
+    def comparison_profile(self) -> str:
+        """Return the currently selected comparison profile name.
+
+        Returns:
+            str: The current comparison profile name.
+        """
+        index = self.comparison_profile_select.GetSelection()
+        if index == -1:  # Fix for #67
+            index = 0
+            self.comparison_profile_select.SetSelection(index)
         return list(self.comparison_profiles.values())[index]
 
     def comparison_profile_drop_handler(self, path):
@@ -945,20 +954,17 @@ class GamutViewOptions(wx_Panel):
             self.comparison_profile_select_handler(None)
 
     def comparison_profile_select_handler(self, event):
-        try:
-            index = self.comparison_profile_select.GetSelection()
-            if index > 0:
-                self.comparison_profile_select.SetToolTipString(
-                    self.comparison_profile.fileName
-                )
-            else:
-                self.comparison_profile_select.SetToolTip(None)
-            self.comparison_whitepoint_bmp.Show(index > 0)
-            self.comparison_whitepoint_legend.Show(index > 0)
-            self.comparison_profile_bmp.Show(index > 0)
-            self.DrawCanvas(0, reset=False)
-        except Exception:
-            traceback.print_exc()
+        index = self.comparison_profile_select.GetSelection()
+        if index > 0:
+            self.comparison_profile_select.SetToolTipString(
+                self.comparison_profile.fileName
+            )
+        else:
+            self.comparison_profile_select.SetToolTip(None)
+        self.comparison_whitepoint_bmp.Show(index > 0)
+        self.comparison_whitepoint_legend.Show(index > 0)
+        self.comparison_profile_bmp.Show(index > 0)
+        self.DrawCanvas(0, reset=False)
 
     def comparison_profiles_sort(self):
         comparison_profiles = dict_slice(self.comparison_profiles, 2)
@@ -975,13 +981,17 @@ class GamutViewOptions(wx_Panel):
             return "f"
 
     def draw(self, center=False):
+        index = self.whitepoint_select.GetSelection()
+        if index == -1:  # Fix for #67
+            index = 0
+            self.whitepoint_select.SetSelection(index)
         colorspace = self.colorspace
         parent = self.TopLevelParent
         parent.client.proportional = True
         parent.client.DrawCanvas(
             f"{colorspace} {lang.getstr('colorspace')}",
             colorspace,
-            whitepoint=self.whitepoint_select.GetSelection(),
+            whitepoint=index,
             center=center,
             show_outline=self.draw_gamut_outline_cb.GetValue(),
         )
@@ -998,7 +1008,19 @@ class GamutViewOptions(wx_Panel):
         else:
             self.DrawCanvas()
 
-    def get_colorspace(self, dimensions=2):
+    def get_colorspace(self, dimensions : int = 2) -> str:
+        """Return currently selected colorspace name.
+
+        Args:
+            dimensions (int): The dimensions, default is 2.
+
+        Returns:
+            str: The name of the currently selected colorspace.
+        """
+        index = self.colorspace_select.GetSelection()
+        if index == -1:  # Fix for #67
+            index = 0
+            self.colorspace_select.SetSelection(index)
         return {
             0: "a*b*" if dimensions == 2 else "Lab",
             1: "u*v*" if dimensions == 2 else "Luv",
@@ -1011,15 +1033,20 @@ class GamutViewOptions(wx_Panel):
             8: "ICtCp",
             9: "IPT",
             10: "Lpt",
-        }.get(
-            self.colorspace_select.GetSelection(), "a*b*" if dimensions == 2 else "Lab"
-        )
+        }.get(index, "a*b*" if dimensions == 2 else "Lab")
 
     @property
-    def intent(self):
-        return {0: "a", 1: "r", 2: "p", 3: "s"}.get(
-            self.rendering_intent_select.GetSelection()
-        )
+    def intent(self) -> str:
+        """Return rendering intent.
+
+        Returns:
+            str: The single letter rendering intent.
+        """
+        index = self.rendering_intent_select.GetSelection()
+        if index == -1:  # Fix for #67
+            index = 0
+            self.rendering_intent_select.SetSelection(index)
+        return {0: "a", 1: "r", 2: "p", 3: "s"}.get(index)
 
     @property
     def order(self):
