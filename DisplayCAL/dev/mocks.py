@@ -93,20 +93,17 @@ def check_call(  # pylint: disable=too-many-arguments
     call_count: int = 1,
     as_property: bool = False,
 ) -> Generator[CallList, None, None]:
-    """
-    Context manager for mocking and checking a call to a method.
+    """Context manager for mocking and checking a call to a method.
 
-    If called is greater 0, and call_args and call_kwargs are given, the
-    context manager will check that the mocked method was called with
-    those arguments. Also, it will assert that the mock was called exactly
-    once.
+    If called is greater 0, and call_args and call_kwargs are given, the context manager
+    will check that the mocked method was called with those arguments. Also, it will
+    assert that the mock was called exactly once.
 
     If called is False, it will assert that the mock was not called.
 
-    If a return_value is given, the mock will return this value. One can pass
-    an exception that will be raised by the mocked method instead of returning
-    a value. If a Callable is passed, it will be called and its return value
-    returned.
+    If a return_value is given, the mock will return this value. One can pass an
+    exception that will be raised by the mocked method instead of returning a value.
+    If a Callable is passed, it will be called and its return value returned.
     """
     assert (call_args_list is not None and call_kwargs_list is not None) or (
         call_args_list is None and call_kwargs_list is None
