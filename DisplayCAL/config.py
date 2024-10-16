@@ -1201,9 +1201,7 @@ defaults = {
     "profile.black_point_correction": 0.0,
     "profile.create_gamut_views": 1,
     "profile.install_scope": (
-        "l"
-        if (sys.platform != "win32" and os.geteuid() == 0)
-        else "u"  # Linux, OSX
+        "l" if (sys.platform != "win32" and os.geteuid() == 0) else "u"  # Linux, OSX
     ),
     "profile.license": "Public Domain",
     "profile.load_on_login": 1,
