@@ -118,3 +118,57 @@ This should install DisplayCAL. To run the UI:
 ```shell
 displaycal
 ```
+
+Building `DisplayCAL.app`
+-------------------------
+
+You can build a proper macOS app to make it easier to run the application.
+
+Fristly install the requirements if you didn't already done it before:
+
+```shell
+brew install glib gtk+3 python@3.13
+```
+
+Clone the source of DisplayCAL, build and install it:
+
+```shell
+cd ~
+git clone https://www.github.com/eoyilmaz/displaycal-py3
+cd displaycal-py3
+make venv build install
+source ./.venv/bin/activate
+```
+
+Now you can generate the app:
+
+```shell
+python3 setup.py py2app
+```
+
+That should generate a folder with the name `py2app.macosx-14.0-arm64-py3.13` under the
+`dist` folder which should contain another folder with the name `DisplayCAL-3.9.14`
+which should contain the `DisplayCAL.app` package.
+
+You can use this directly, by putting it under the `/Applications` of your system.
+
+Creating a `dmg` Image
+----------------------
+
+You can generate a `dmg` image so that it is more compact and inline with how the other
+macOS applications are distributed.
+
+First put a link to the `Applications` folder for people to easily drag & drop the app
+in to their system `Applications` folder:
+
+```shell
+cd ~/displaycal-py3/dist/py2app.macosx-14.0-arm64-py3.13/DisplayCAL-3.9.14
+ln -s /Applications
+```
+
+Use `Disk Utility.app` to generate a `dmg` file, by using the
+`File -> New Image -> Image From Folder...` menu and selecting the
+`~/displaycal-py3/dist/py2app.macosx-14.0-arm64-py3.13/DisplayCAL-3.9.14` folder.
+
+Now you can rename the `dmg` file to `DisplayCAL-3.9.14_macOS_arm64.dmg` or
+`DisplayCAL-3.9.14_macOS_x86.dmg` depending on your macOS architecture.
