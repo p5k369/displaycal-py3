@@ -17695,9 +17695,6 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
         if getcfg("settings.changed") and not self.settings_confirm_discard():
             return
 
-        print(f"path                : {path}")
-        print(f"os.path.exists(path): {os.path.exists(path)}")
-
         if not os.path.exists(path):
             sel = self.calibration_file_ctrl.GetSelection()
             if len(self.recent_cals) > sel and self.recent_cals[sel] == path:
